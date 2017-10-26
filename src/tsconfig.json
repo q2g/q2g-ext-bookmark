@@ -1,0 +1,24 @@
+{
+    "compileOnSave": true,
+    "exclude": [
+      "packages",
+      "obj",
+      "bin",
+      "lib/davinci.js/src/node_modules",
+      "lib/davinci.js/src/packages"
+    ],
+    "compilerOptions": {
+      "module": "amd",
+      "noEmitOnError": true,
+      "noImplicitAny": false,
+      "removeComments": false,
+      "sourceMap": true,
+      "target": "es5",
+      "lib": [
+        "dom",
+        "es5",
+        "es2015.promise",
+        "scripthost"
+      ]
+    }
+  }

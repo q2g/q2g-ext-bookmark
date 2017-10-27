@@ -28,12 +28,15 @@ interface IShortcutProperties {
 }
 //#endregion
 
-let logger = new Logging.Logger("q2g-ext-selectorDrective");
+enum eStateName {
+    "addBookmark",
+    "searchBookmark"
+}
 
 class BookmarkController implements ng.IController {
 
     $onInit(): void {
-        logger.debug("initialisation from BookmarkController");
+        this.logger.debug("initialisation from BookmarkController");
     }
 
     //#region Variables
@@ -41,7 +44,7 @@ class BookmarkController implements ng.IController {
     bookmarkList: Q2gListAdapter;
     editMode: boolean = false;
     element: JQuery;
-    focusedPosition: number = 1;
+    // focusedPosition: number;
     inputBarType: string = "search";
     menuList: Array<IMenuElement>;
     properties: IShortcutProperties = {
@@ -69,15 +72,11 @@ class BookmarkController implements ng.IController {
         if (this.elementHeight !== value) {
             try {
                 this._elementHeight = value;
-                if (this.bookmarkList) {
+                if (this.bookmarkList && this.bookmarkList.obj) {
                     this.bookmarkList.obj.emit("changed", calcNumbreOfVisRows(this.elementHeight));
-                } else {
-                    this.timeout(() => {
-                        this.bookmarkList.obj.emit("changed", calcNumbreOfVisRows(this.elementHeight));
-                    }, 200);
                 }
             } catch (err) {
-                logger.error("error in setter of elementHeight", err);
+                this.logger.error("error in setter of elementHeight", err);
             }
         }
     }
@@ -96,10 +95,7 @@ class BookmarkController implements ng.IController {
                     "qInfo": { "qType": "BookmarkList" },
                     "qBookmarkListDef": { "qType": "bookmark" }
                 };
-
                 this.registrateSelectionObject();
-
-
                 let that = this;
                 value.on("changed", function() {
                     value.getProperties()
@@ -107,7 +103,7 @@ class BookmarkController implements ng.IController {
                         that.setProperties(res.properties);
                     })
                     .catch((error) => {
-                        logger.error("ERROR in setter of model", error);
+                        this.logger.error("ERROR in setter of model", error);
                     });
                 });
 
@@ -126,17 +122,17 @@ class BookmarkController implements ng.IController {
                                 bookmarkLayout.qBookmarkList.qItems.length, "bookmark");
                         })
                         .catch((error) => {
-                            logger.error("Error in on change of bookmark object", error);
+                            this.logger.error("Error in on change of bookmark object", error);
                         });
                     });
                     bookmarkObject.emit("changed");
                 })
                 .catch((error) => {
-                    logger.error("Error in setter of model", error);
+                    this.logger.error("Error in setter of model", error);
                 });
                 this.model.emit("changed");
             } catch (e) {
-                logger.error("error", e);
+                this.logger.error("error", e);
             }
         }
     }
@@ -166,36 +162,60 @@ class BookmarkController implements ng.IController {
         if (v !== this._headerInput) {
             try {
                 this._headerInput = v;
-                if (!(this.inputStates.relStateName === "addBookmark")) {
-                    if (!v) {
-                        this.bookmarkList.obj.searchFor("")
-                        .then(() => {
-                            this.bookmarkList.obj.emit("changed", calcNumbreOfVisRows(this.elementHeight));
-                            this.bookmarkList.itemsCounter = (this.bookmarkList.obj as any).model.calcCube.length;
-                            this.timeout();
-                        })
-                        .catch((error) => {
-                            logger.error("error", error);
-                        });
-                        return;
-                    }
-
-                    this.bookmarkList.obj.searchFor(v)
+                if (!(this.inputStates.relStateName === eStateName.addBookmark.toString())) {
+                    this.bookmarkList.obj.searchFor(!v? "": v)
                     .then(() => {
                         this.bookmarkList.obj.emit("changed", calcNumbreOfVisRows(this.elementHeight));
                         this.bookmarkList.itemsCounter = (this.bookmarkList.obj as any).model.calcCube.length;
                         this.timeout();
                     })
                     .catch((error) => {
-                        logger.error("error", error);
+                        this.logger.error("error", error);
                     });
                 }
             } catch (error) {
-                logger.error("ERROR", error);
+                this.logger.error("ERROR", error);
             }
         }
     }
 
+    //#endregion
+
+    //#region focusedPosition
+    private _focusedPosition: number;
+    public get focusedPosition(): number {
+        return this._focusedPosition;
+    }
+    public set focusedPosition(v : number) {
+        if (v !== this._focusedPosition) {
+        this.logger.info("v", v);
+            this._focusedPosition = v;
+            if (!v || v < 0) {
+                this.logger.info("in if");
+                this.menuList[0].isEnabled = false;
+                this.menuList[2].isEnabled = false;
+            } else {
+                this.logger.info("in else");
+                this.menuList[0].isEnabled = true;
+                this.menuList[2].isEnabled = true;
+
+            }
+        }
+    }
+    //#endregion
+
+    //#region logger
+    private _logger: Logging.Logger;
+    private get logger(): Logging.Logger {
+        if (!this._logger) {
+            try {
+                this._logger = new Logging.Logger("BookmarkController");
+            } catch (e) {
+                this.logger.error("ERROR in create logger instance", e);
+            }
+        }
+        return this._logger;
+    }
     //#endregion
 
     static $inject = ["$timeout", "$element", "$scope"];
@@ -222,7 +242,7 @@ class BookmarkController implements ng.IController {
                     this.timeout();
                 }
             } catch (e) {
-                logger.error("Error in Constructor with click event", e);
+                this.logger.error("Error in Constructor with click event", e);
             }
         });
 
@@ -263,7 +283,7 @@ class BookmarkController implements ng.IController {
                 this.bookmarkList.collection[pos].status = "S";
             })
             .catch((error) => {
-                logger.error("ERROR in selectListObjectCallback", error);
+                this.logger.error("ERROR in selectListObjectCallback", error);
             });
         }, this.actionDelay);
     }
@@ -325,7 +345,7 @@ class BookmarkController implements ng.IController {
                 ].focus();
                 return true;
             } catch (e) {
-                logger.error("Error in shortcut Handler", e);
+                this.logger.error("Error in shortcut Handler", e);
                 return false;
             }
             //#endregion
@@ -338,7 +358,7 @@ class BookmarkController implements ng.IController {
                     }
                     return true;
                 } catch (e) {
-                    logger.error("Error in shortcutHandlerExtensionHeader", e);
+                    this.logger.error("Error in shortcutHandlerExtensionHeader", e);
                     return false;
                 }
             //#endregion
@@ -365,25 +385,11 @@ class BookmarkController implements ng.IController {
     }
 
     /**
-     * return the logo which is used in the input bar
-     * @param type type of the logo
-     */
-    getInputBarLogo(type: string): string {
-        switch (type) {
-            case "add":
-            return "lui-icon--bookmark";
-
-            default:
-                return "lui-icon--search";
-        }
-    }
-
-    /**
      * callback when enter on input field
      */
     extensionHeaderAccept() {
         switch (this.inputStates.relStateName) {
-            case "addBookmark":
+            case eStateName.addBookmark.toString():
             this.addBookmark();
                 break;
         }
@@ -422,14 +428,11 @@ class BookmarkController implements ng.IController {
 
         switch (type) {
             case "addBookmark":
-                this.inputStates.relStateName = "addBookmark";
+                this.inputStates.relStateName = eStateName.addBookmark.toString();
                 break;
 
             case "searchBookmark":
-                this.inputStates.relStateName = "searchBookmark";
-                break;
-
-            default:
+                this.inputStates.relStateName = eStateName.searchBookmark.toString();
                 break;
         }
 
@@ -466,7 +469,7 @@ class BookmarkController implements ng.IController {
         this.menuList.push({
             buttonType: "",
             isVisible: true,
-            isEnabled: false,
+            isEnabled: true,
             icon: "minus",
             name: "Remove Bookmark",
             hasSeparator: false,
@@ -503,13 +506,13 @@ class BookmarkController implements ng.IController {
                         that.selectBookmarkToggle = false;
                     })
                     .catch((error) => {
-                        logger.error("ERROR in on change of selection objcet", error);
+                        this.logger.error("ERROR in on change of selection objcet", error);
                     });
                 });
                 object.emit("changed");
             })
             .catch((error) => {
-                logger.error("ERROR in checkIfSelectionChanged", error);
+                this.logger.error("ERROR in checkIfSelectionChanged", error);
             });
             resolve(true);
         });
@@ -521,7 +524,7 @@ class BookmarkController implements ng.IController {
     private initInputStates(): void {
 
         let addBookmarkState: IStateMachineState = {
-            name: "addBookmark",
+            name: eStateName.addBookmark.toString(),
             icon: "lui-icon--bookmark",
             placeholder: "enter Bookmark Name",
             acceptFunction : this.addBookmark
@@ -548,11 +551,11 @@ class BookmarkController implements ng.IController {
             };
             this.model.app.createBookmark(bookmarkProperties)
             .catch((error) => {
-                logger.error("error during creation of Bookmark", error);
+                this.logger.error("error during creation of Bookmark", error);
             });
-            this.showSearchField = false;
+            this.headerInput = null;
         } catch (error) {
-            logger.error("Error in setter of input Accept", error);
+            this.logger.error("Error in setter of input Accept", error);
         }
     }
 }
@@ -576,7 +579,7 @@ export function BookmarkDirectiveFactory(rootNameSpace: string): ng.IDirectiveFa
                 checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
                     ListViewDirectiveFactory(rootNameSpace), "Listview");
                 checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
-                    IdentifierDirectiveFactory(rootNameSpace), "AkquinetIdentifier");
+                    IdentifierDirectiveFactory(rootNameSpace), "Identifier");
                 checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
                     ShortCutDirectiveFactory(rootNameSpace), "Shortcut");
                 checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
@@ -587,4 +590,3 @@ export function BookmarkDirectiveFactory(rootNameSpace: string): ng.IDirectiveFa
         };
     };
 }
-

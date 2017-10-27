@@ -12,7 +12,7 @@ define(["require", "exports", "qvangular", "qlik", "text!./q2g-ext-bookmark.html
     var $injector = qvangular.$injector;
     utils_1.checkDirectiveIsRegistrated($injector, qvangular, "", q2g_ext_bookmarkDirective_1.BookmarkDirectiveFactory("Bookmarkextension"), "BookmarkExtension");
     //#endregion
-    //#region assist
+    //#region extension properties
     var parameter = {
         type: "items",
         component: "accordion",
@@ -100,7 +100,6 @@ define(["require", "exports", "qvangular", "qlik", "text!./q2g-ext-bookmark.html
     //#endregion
     var BookmarkExtension = (function () {
         function BookmarkExtension(model) {
-            logger.debug("Constructor of Selection Extension", "");
             this.model = model;
         }
         BookmarkExtension.prototype.isEditMode = function () {
@@ -117,11 +116,7 @@ define(["require", "exports", "qvangular", "qlik", "text!./q2g-ext-bookmark.html
         definition: parameter,
         initialProperties: {},
         template: template,
-        support: {
-            export: true
-        },
         controller: ["$scope", function (scope) {
-                logger.debug("Initialice Extension", scope);
                 scope.vm = new BookmarkExtension(utils_1.getEnigma(scope));
             }]
     };

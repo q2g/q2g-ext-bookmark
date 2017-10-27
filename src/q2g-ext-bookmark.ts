@@ -25,7 +25,7 @@ checkDirectiveIsRegistrated($injector, qvangular, "", BookmarkDirectiveFactory("
     "BookmarkExtension");
 //#endregion
 
-//#region assist
+//#region extension properties
 let parameter = {
     type: "items",
     component: "accordion",
@@ -114,8 +114,6 @@ let parameter = {
 
 class BookmarkExtension {
     constructor(model: EngineAPI.IGenericObject) {
-        logger.debug("Constructor of Selection Extension", "");
-
         this.model = model;
     }
 
@@ -135,12 +133,8 @@ export = {
     definition: parameter,
     initialProperties: { },
     template: template,
-    support : {
-        export: true
-    },
     controller: ["$scope", function (
         scope: IVMScope<BookmarkExtension>) {
-        logger.debug("Initialice Extension", scope);
         scope.vm = new BookmarkExtension(getEnigma(scope));
     }]
 };

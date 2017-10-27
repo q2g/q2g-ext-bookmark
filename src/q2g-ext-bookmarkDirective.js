@@ -2,7 +2,11 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
-    var logger = new logger_1.Logging.Logger("q2g-ext-selectorDrective");
+    var eStateName;
+    (function (eStateName) {
+        eStateName[eStateName["addBookmark"] = 0] = "addBookmark";
+        eStateName[eStateName["searchBookmark"] = 1] = "searchBookmark";
+    })(eStateName || (eStateName = {}));
     var BookmarkController = (function () {
         /**
          * init of the controller for the Directive
@@ -14,7 +18,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             //#region Variables
             this.actionDelay = 0;
             this.editMode = false;
-            this.focusedPosition = 1;
+            // focusedPosition: number;
             this.inputBarType = "search";
             this.properties = {
                 shortcutFocusBookmarkList: " ",
@@ -50,7 +54,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                     }
                 }
                 catch (e) {
-                    logger.error("Error in Constructor with click event", e);
+                    _this.logger.error("Error in Constructor with click event", e);
                 }
             });
             scope.$watch(function () {
@@ -60,28 +64,22 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             });
         }
         BookmarkController.prototype.$onInit = function () {
-            logger.debug("initialisation from BookmarkController");
+            this.logger.debug("initialisation from BookmarkController");
         };
         Object.defineProperty(BookmarkController.prototype, "elementHeight", {
             get: function () {
                 return this._elementHeight;
             },
             set: function (value) {
-                var _this = this;
                 if (this.elementHeight !== value) {
                     try {
                         this._elementHeight = value;
-                        if (this.bookmarkList) {
+                        if (this.bookmarkList && this.bookmarkList.obj) {
                             this.bookmarkList.obj.emit("changed", utils_1.calcNumbreOfVisRows(this.elementHeight));
-                        }
-                        else {
-                            this.timeout(function () {
-                                _this.bookmarkList.obj.emit("changed", utils_1.calcNumbreOfVisRows(_this.elementHeight));
-                            }, 200);
                         }
                     }
                     catch (err) {
-                        logger.error("error in setter of elementHeight", err);
+                        this.logger.error("error in setter of elementHeight", err);
                     }
                 }
             },
@@ -104,36 +102,38 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                         this.registrateSelectionObject();
                         var that_1 = this;
                         value.on("changed", function () {
+                            var _this = this;
                             value.getProperties()
                                 .then(function (res) {
                                 that_1.setProperties(res.properties);
                             })
                                 .catch(function (error) {
-                                logger.error("ERROR in setter of model", error);
+                                _this.logger.error("ERROR in setter of model", error);
                             });
                         });
                         this.model.app.createSessionObject(bmp)
                             .then(function (bookmarkObject) {
                             var that = _this;
                             bookmarkObject.on("changed", function () {
+                                var _this = this;
                                 this.getLayout()
                                     .then(function (bookmarkLayout) {
                                     var bookmarkObject = new object_1.Q2gIndObject(new utils_1.AssistHyperCubeBookmarks(bookmarkLayout));
                                     that.bookmarkList = new object_1.Q2gListAdapter(bookmarkObject, utils_1.calcNumbreOfVisRows(that.elementHeight), bookmarkLayout.qBookmarkList.qItems.length, "bookmark");
                                 })
                                     .catch(function (error) {
-                                    logger.error("Error in on change of bookmark object", error);
+                                    _this.logger.error("Error in on change of bookmark object", error);
                                 });
                             });
                             bookmarkObject.emit("changed");
                         })
                             .catch(function (error) {
-                            logger.error("Error in setter of model", error);
+                            _this.logger.error("Error in setter of model", error);
                         });
                         this.model.emit("changed");
                     }
                     catch (e) {
-                        logger.error("error", e);
+                        this.logger.error("error", e);
                     }
                 }
             },
@@ -164,34 +164,60 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                 if (v !== this._headerInput) {
                     try {
                         this._headerInput = v;
-                        if (!(this.inputStates.relStateName === "addBookmark")) {
-                            if (!v) {
-                                this.bookmarkList.obj.searchFor("")
-                                    .then(function () {
-                                    _this.bookmarkList.obj.emit("changed", utils_1.calcNumbreOfVisRows(_this.elementHeight));
-                                    _this.bookmarkList.itemsCounter = _this.bookmarkList.obj.model.calcCube.length;
-                                    _this.timeout();
-                                })
-                                    .catch(function (error) {
-                                    logger.error("error", error);
-                                });
-                                return;
-                            }
-                            this.bookmarkList.obj.searchFor(v)
+                        if (!(this.inputStates.relStateName === eStateName.addBookmark.toString())) {
+                            this.bookmarkList.obj.searchFor(!v ? "" : v)
                                 .then(function () {
                                 _this.bookmarkList.obj.emit("changed", utils_1.calcNumbreOfVisRows(_this.elementHeight));
                                 _this.bookmarkList.itemsCounter = _this.bookmarkList.obj.model.calcCube.length;
                                 _this.timeout();
                             })
                                 .catch(function (error) {
-                                logger.error("error", error);
+                                _this.logger.error("error", error);
                             });
                         }
                     }
                     catch (error) {
-                        logger.error("ERROR", error);
+                        this.logger.error("ERROR", error);
                     }
                 }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BookmarkController.prototype, "focusedPosition", {
+            get: function () {
+                return this._focusedPosition;
+            },
+            set: function (v) {
+                if (v !== this._focusedPosition) {
+                    this.logger.info("v", v);
+                    this._focusedPosition = v;
+                    if (!v || v < 0) {
+                        this.logger.info("in if");
+                        this.menuList[0].isEnabled = false;
+                        this.menuList[2].isEnabled = false;
+                    }
+                    else {
+                        this.logger.info("in else");
+                        this.menuList[0].isEnabled = true;
+                        this.menuList[2].isEnabled = true;
+                    }
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BookmarkController.prototype, "logger", {
+            get: function () {
+                if (!this._logger) {
+                    try {
+                        this._logger = new logger_1.Logging.Logger("BookmarkController");
+                    }
+                    catch (e) {
+                        this.logger.error("ERROR in create logger instance", e);
+                    }
+                }
+                return this._logger;
             },
             enumerable: true,
             configurable: true
@@ -227,7 +253,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                     _this.bookmarkList.collection[pos].status = "S";
                 })
                     .catch(function (error) {
-                    logger.error("ERROR in selectListObjectCallback", error);
+                    _this.logger.error("ERROR in selectListObjectCallback", error);
                 });
             }, this.actionDelay);
         };
@@ -280,7 +306,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                         return true;
                     }
                     catch (e) {
-                        logger.error("Error in shortcut Handler", e);
+                        this.logger.error("Error in shortcut Handler", e);
                         return false;
                     }
                 //#endregion
@@ -293,7 +319,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                         return true;
                     }
                     catch (e) {
-                        logger.error("Error in shortcutHandlerExtensionHeader", e);
+                        this.logger.error("Error in shortcutHandlerExtensionHeader", e);
                         return false;
                     }
                 //#endregion
@@ -315,23 +341,11 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             return false;
         };
         /**
-         * return the logo which is used in the input bar
-         * @param type type of the logo
-         */
-        BookmarkController.prototype.getInputBarLogo = function (type) {
-            switch (type) {
-                case "add":
-                    return "lui-icon--bookmark";
-                default:
-                    return "lui-icon--search";
-            }
-        };
-        /**
          * callback when enter on input field
          */
         BookmarkController.prototype.extensionHeaderAccept = function () {
             switch (this.inputStates.relStateName) {
-                case "addBookmark":
+                case eStateName.addBookmark.toString():
                     this.addBookmark();
                     break;
             }
@@ -367,12 +381,10 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
         BookmarkController.prototype.controllingInputBarOptions = function (type) {
             switch (type) {
                 case "addBookmark":
-                    this.inputStates.relStateName = "addBookmark";
+                    this.inputStates.relStateName = eStateName.addBookmark.toString();
                     break;
                 case "searchBookmark":
-                    this.inputStates.relStateName = "searchBookmark";
-                    break;
-                default:
+                    this.inputStates.relStateName = eStateName.searchBookmark.toString();
                     break;
             }
             this.inputBarFocus = true;
@@ -407,7 +419,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             this.menuList.push({
                 buttonType: "",
                 isVisible: true,
-                isEnabled: false,
+                isEnabled: true,
                 icon: "minus",
                 name: "Remove Bookmark",
                 hasSeparator: false,
@@ -431,6 +443,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                     .then(function (object) {
                     var that = _this;
                     object.on("changed", function () {
+                        var _this = this;
                         this.getLayout()
                             .then(function () {
                             if (!that.selectBookmarkToggle) {
@@ -442,13 +455,13 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                             that.selectBookmarkToggle = false;
                         })
                             .catch(function (error) {
-                            logger.error("ERROR in on change of selection objcet", error);
+                            _this.logger.error("ERROR in on change of selection objcet", error);
                         });
                     });
                     object.emit("changed");
                 })
                     .catch(function (error) {
-                    logger.error("ERROR in checkIfSelectionChanged", error);
+                    _this.logger.error("ERROR in checkIfSelectionChanged", error);
                 });
                 resolve(true);
             });
@@ -458,7 +471,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
          */
         BookmarkController.prototype.initInputStates = function () {
             var addBookmarkState = {
-                name: "addBookmark",
+                name: eStateName.addBookmark.toString(),
                 icon: "lui-icon--bookmark",
                 placeholder: "enter Bookmark Name",
                 acceptFunction: this.addBookmark
@@ -470,6 +483,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
          * creates a new bookmark
          */
         BookmarkController.prototype.addBookmark = function () {
+            var _this = this;
             try {
                 var bookmarkProperties = {
                     "qMetaDef": {
@@ -482,12 +496,12 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                 };
                 this.model.app.createBookmark(bookmarkProperties)
                     .catch(function (error) {
-                    logger.error("error during creation of Bookmark", error);
+                    _this.logger.error("error during creation of Bookmark", error);
                 });
-                this.showSearchField = false;
+                this.headerInput = null;
             }
             catch (error) {
-                logger.error("Error in setter of input Accept", error);
+                this.logger.error("Error in setter of input Accept", error);
             }
         };
         //#endregion
@@ -511,7 +525,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                 },
                 compile: function () {
                     utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, listview_1.ListViewDirectiveFactory(rootNameSpace), "Listview");
-                    utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, identifier_1.IdentifierDirectiveFactory(rootNameSpace), "AkquinetIdentifier");
+                    utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, identifier_1.IdentifierDirectiveFactory(rootNameSpace), "Identifier");
                     utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, shortcut_1.ShortCutDirectiveFactory(rootNameSpace), "Shortcut");
                     utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, scrollBar_1.ScrollBarDirectiveFactory(rootNameSpace), "ScrollBar");
                     utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, extensionHeader_1.ExtensionHeaderDirectiveFactory(rootNameSpace), "ExtensionHeader");

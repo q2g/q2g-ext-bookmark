@@ -1,11 +1,10 @@
-
-//#region IMPORT
+//#region imports
 import { Logging } from "./lib/daVinci.js/src/utils/logger";
 import { ListViewDirectiveFactory, IDataModelItem } from "./lib/daVinci.js/src/directives/listview";
 import { IdentifierDirectiveFactory } from "./lib/daVinci.js/src/directives/identifier";
 import { Q2gListAdapter, Q2gListObject, Q2gIndObject } from "./lib/daVinci.js/src/utils/object";
 import { ScrollBarDirectiveFactory } from "./lib/daVinci.js/src/directives/scrollBar";
-import { ShortCutDirectiveFactory } from "./lib/daVinci.js/src/directives/shortcut";
+import { ShortCutDirectiveFactory, IShortcutObject, IDomContainer } from "./lib/daVinci.js/src/directives/shortcut";
 import { ExtensionHeaderDirectiveFactory } from "./lib/daVinci.js/src/directives/extensionHeader";
 
 import { calcNumbreOfVisRows,
@@ -19,18 +18,19 @@ import { calcNumbreOfVisRows,
 import * as template from "text!./q2g-ext-bookmarkDirective.html";
 //#endregion
 
-//#region INTERFACES
-interface IShortcutProperties {
+//#region interfaces
+export interface IShortcutProperties {
     shortcutFocusBookmarkList: string;
     shortcutFocusSearchField: string;
     shortcutRemoveBookmark: string;
     shortcutAddBookmark: string;
+    shortcutUseDefaults: string;
 }
 //#endregion
 
 enum eStateName {
-    "addBookmark",
-    "searchBookmark"
+    addBookmark,
+    searchBookmark
 }
 
 class BookmarkController implements ng.IController {
@@ -44,14 +44,14 @@ class BookmarkController implements ng.IController {
     bookmarkList: Q2gListAdapter;
     editMode: boolean = false;
     element: JQuery;
-    // focusedPosition: number;
     inputBarType: string = "search";
     menuList: Array<IMenuElement>;
     properties: IShortcutProperties = {
         shortcutFocusBookmarkList: " ",
         shortcutFocusSearchField: " ",
         shortcutRemoveBookmark: " ",
-        shortcutAddBookmark: " "
+        shortcutAddBookmark: " ",
+        shortcutUseDefaults: " "
     };
     showButtons: boolean = false;
     showFocused: boolean = true;
@@ -59,7 +59,7 @@ class BookmarkController implements ng.IController {
     timeout: ng.ITimeoutService;
     titleDimension: string = "Bookmarks";
     selectBookmarkToggle: boolean = true;
-    inputStates: StateMachineInput = new StateMachineInput();
+    inputStates: StateMachineInput<eStateName> = new StateMachineInput<eStateName>();
     inputBarFocus: boolean = false;
     //#endregion
 
@@ -162,7 +162,7 @@ class BookmarkController implements ng.IController {
         if (v !== this._headerInput) {
             try {
                 this._headerInput = v;
-                if (!(this.inputStates.relStateName === eStateName.addBookmark.toString())) {
+                if (!(this.inputStates.relStateName === eStateName.addBookmark)) {
                     this.bookmarkList.obj.searchFor(!v? "": v)
                     .then(() => {
                         this.bookmarkList.obj.emit("changed", calcNumbreOfVisRows(this.elementHeight));
@@ -178,7 +178,6 @@ class BookmarkController implements ng.IController {
             }
         }
     }
-
     //#endregion
 
     //#region focusedPosition
@@ -187,19 +186,21 @@ class BookmarkController implements ng.IController {
         return this._focusedPosition;
     }
     public set focusedPosition(v : number) {
-        if (v !== this._focusedPosition) {
         this.logger.info("v", v);
+        if (!v || v !== this._focusedPosition) {
             this._focusedPosition = v;
-            if (!v || v < 0) {
+            if (v < 0) {
                 this.logger.info("in if");
-                this.menuList[0].isEnabled = false;
-                this.menuList[2].isEnabled = false;
-            } else {
-                this.logger.info("in else");
                 this.menuList[0].isEnabled = true;
                 this.menuList[2].isEnabled = true;
+            } else {
+                this.logger.info("in else");
+                this.menuList[0].isEnabled = false;
+                this.menuList[2].isEnabled = false;
 
             }
+
+            this.menuList = JSON.parse(JSON.stringify(this.menuList));
         }
     }
     //#endregion
@@ -292,14 +293,14 @@ class BookmarkController implements ng.IController {
      * function which gets called, when the buttons of the menu list gets hit
      * @param item name of the button which got activated
      */
-    menuListActionCallback(item: any): void {
+    menuListActionCallback(item: string): void {
         switch (item) {
             case "Remove Bookmark":
                 this.removeBookmark(this.bookmarkList.collection[this.focusedPosition].id[0] as string);
                 break;
 
             case "Add Bookmark":
-            this.controllingInputBarOptions("addBookmark");
+            this.controllingInputBarOptions(eStateName.addBookmark);
                 break;
         }
 
@@ -307,27 +308,20 @@ class BookmarkController implements ng.IController {
 
     /**
      * shortcuthandler, called when shortcut is hit
-     * @param objectShortcut object wich gives you the shortcut name and the element, from which the shortcut come from
+     * @param shortcutObject object wich gives you the shortcut name and the element, from which the shortcut come from
      */
-    shortcutHandler(objectShortcut: any): boolean {
-
-        switch (objectShortcut.objectShortcut.name) {
+    shortcutHandler(shortcutObject: IShortcutObject, domcontainer: IDomContainer): boolean {
+        this.logger.info("",shortcutObject);
+        switch (shortcutObject.name) {
 
             //#region focusList
             case "focusList":
             try {
                 this.showFocused = true;
                 this.timeout();
-                if (this.focusedPosition < 0) {
+                if (this.focusedPosition < 0 || this.focusedPosition >= this.bookmarkList.collection.length) {
                     this.focusedPosition = 0;
-                    objectShortcut.element.children().children().children()[0].focus();
-                    this.timeout();
-                    return true;
-                }
-
-                if (this.focusedPosition >= this.bookmarkList.collection.length) {
-                    this.focusedPosition = 0;
-                    objectShortcut.element.children().children().children()[0].focus();
+                    domcontainer.element.children().children().children()[0].focus();
                     this.timeout();
                     return true;
                 }
@@ -340,7 +334,7 @@ class BookmarkController implements ng.IController {
                         = this.focusedPosition - (calcNumbreOfVisRows(this.elementHeight) + 1);
                 }
 
-                objectShortcut.element.children().children().children().children()[
+                    domcontainer.element.children().children().children().children()[
                     this.focusedPosition - this.bookmarkList.itemsPagingTop
                 ].focus();
                 return true;
@@ -371,13 +365,13 @@ class BookmarkController implements ng.IController {
 
             //#region addBookmark
             case "addBookmark":
-                this.controllingInputBarOptions("addBookmark");
+                this.controllingInputBarOptions(eStateName.addBookmark);
                 break;
             //#endregion
 
             //#region searchBookmark
             case "searchBookmark":
-                this.controllingInputBarOptions("searchBookmark");
+                this.controllingInputBarOptions(eStateName.searchBookmark);
                 break;
             //#endregion
         }
@@ -389,7 +383,7 @@ class BookmarkController implements ng.IController {
      */
     extensionHeaderAccept() {
         switch (this.inputStates.relStateName) {
-            case eStateName.addBookmark.toString():
+            case eStateName.addBookmark:
             this.addBookmark();
                 break;
         }
@@ -399,7 +393,7 @@ class BookmarkController implements ng.IController {
      * saves the Properties from the getLayout call from qlik enine in own Object
      * @param properties Properties from getLayout call
      */
-    private setProperties(properties: any): Promise<boolean> {
+    private setProperties(properties: IShortcutProperties): Promise<boolean> {
         return new Promise((resolve, reject) => {
             this.properties.shortcutFocusBookmarkList = properties.shortcutFocusBookmarkList;
             this.properties.shortcutFocusSearchField = properties.shortcutFocusSearchField;
@@ -424,15 +418,15 @@ class BookmarkController implements ng.IController {
     /**
      * controlling the options set to create a bookmark in the header input
      */
-    private controllingInputBarOptions(type:string): void {
+    private controllingInputBarOptions(type:eStateName): void {
 
         switch (type) {
-            case "addBookmark":
-                this.inputStates.relStateName = eStateName.addBookmark.toString();
+            case eStateName.addBookmark:
+                this.inputStates.relStateName = eStateName.addBookmark;
                 break;
 
-            case "searchBookmark":
-                this.inputStates.relStateName = eStateName.searchBookmark.toString();
+            case eStateName.searchBookmark:
+                this.inputStates.relStateName = eStateName.searchBookmark;
                 break;
         }
 
@@ -523,8 +517,8 @@ class BookmarkController implements ng.IController {
      */
     private initInputStates(): void {
 
-        let addBookmarkState: IStateMachineState = {
-            name: eStateName.addBookmark.toString(),
+        let addBookmarkState: IStateMachineState<eStateName> = {
+            name: eStateName.addBookmark,
             icon: "lui-icon--bookmark",
             placeholder: "enter Bookmark Name",
             acceptFunction : this.addBookmark
@@ -532,7 +526,7 @@ class BookmarkController implements ng.IController {
 
         this.inputStates.addState(addBookmarkState);
 
-        this.inputStates.relStateName = "";
+        this.inputStates.relStateName = null;
     }
 
     /**

@@ -6,7 +6,7 @@
 
      <div q2g-shortcut-scope
           shortcut="[{name:'escList', shortcut:'27'}]"
-          shortcut-action="vm.shortcutHandler(objectShortcut)">
+          shortcut-action="vm.shortcutHandler(shortcutObject, domcontainer)">
         <div>
             <q2g-extension-header max-number-of-elements="5"
                                   reserved-button-width="0.5"
@@ -32,7 +32,7 @@
                 {name:'searchBookmark', shortcut:vm.properties.shortcutFocusSearchField},
                 {name:'removeBookmark', shortcut:vm.properties.shortcutRemoveBookmark}
             ]"
-             shortcut-action="vm.shortcutHandler(objectShortcut)">
+             shortcut-action="vm.shortcutHandler(shortcutObject, domcontainer)">
             <q2g-listview style="height: calc(100% - 90px);"
                           tabindex="0"
                           items="vm.bookmarkList.collection"

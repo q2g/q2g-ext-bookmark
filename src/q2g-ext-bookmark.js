@@ -7,7 +7,6 @@ define(["require", "exports", "qvangular", "qlik", "text!./q2g-ext-bookmark.html
     //#region Logger
     logger_1.Logging.LogConfig.SetLogLevel("*", logger_1.Logging.LogLevel.info);
     var logger = new logger_1.Logging.Logger("Main");
-    //#endregion
     //#region Directives
     var $injector = qvangular.$injector;
     utils_1.checkDirectiveIsRegistrated($injector, qvangular, "", q2g_ext_bookmarkDirective_1.BookmarkDirectiveFactory("Bookmarkextension"), "BookmarkExtension");

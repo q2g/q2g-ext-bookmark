@@ -6,7 +6,7 @@ import * as qlik from "qlik";
 import * as template from "text!./q2g-ext-bookmark.html";
 
 import { Logging } from "./lib/daVinci.js/src/utils/logger";
-import { BookmarkDirectiveFactory } from "./q2g-ext-bookmarkDirective";
+import { BookmarkDirectiveFactory, IShortcutProperties } from "./q2g-ext-bookmarkDirective";
 import { getEnigma, checkDirectiveIsRegistrated } from "./lib/daVinci.js/src/utils/utils";
 import { RegistrationProvider, IRegistrationProvider } from "./lib/daVinci.js/src/services/registration";
 //#endregion
@@ -18,6 +18,10 @@ qvangular.service<IRegistrationProvider>("$registrationProvider", RegistrationPr
 Logging.LogConfig.SetLogLevel("*", Logging.LogLevel.info);
 let logger = new Logging.Logger("Main");
 //#endregion
+
+interface IDataProperties {
+    properties: IShortcutProperties;
+}
 
 //#region Directives
 var $injector = qvangular.$injector;
@@ -61,7 +65,7 @@ let parameter = {
                             label: "focus dimension list",
                             type: "string",
                             defaultValue: "strg + alt + 66",
-                            show: function (data: any) {
+                            show: function (data: IDataProperties) {
                                 if (data.properties.shortcutUseDefaults) {
                                     data.properties.shortcutFocusBookmarkList = "strg + alt + 66";
                                 }
@@ -73,7 +77,7 @@ let parameter = {
                             label: "remove Bookmark",
                             type: "string",
                             defaultValue: "strg + alt + 82",
-                            show: function (data: any) {
+                            show: function (data: IDataProperties) {
                                 if (data.properties.shortcutUseDefaults) {
                                     data.properties.shortcutRemoveBookmark = "strg + alt + 82";
                                 }
@@ -85,7 +89,7 @@ let parameter = {
                             label: "add Bookmark",
                             type: "string",
                             defaultValue: "strg + alt + 65",
-                            show: function (data: any) {
+                            show: function (data: IDataProperties) {
                                 if (data.properties.shortcutUseDefaults) {
                                     data.properties.shortcutAddBookmark = "strg + alt + 65";
                                 }
@@ -97,7 +101,7 @@ let parameter = {
                             label: "focus search field",
                             type: "string",
                             defaultValue: "strg + alt + 83",
-                            show: function (data: any) {
+                            show: function (data: IDataProperties) {
                                 if (data.properties.shortcutUseDefaults) {
                                     data.properties.shortcutFocusSearchField = "strg + alt + 83";
                                 }

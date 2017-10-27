@@ -18,13 +18,13 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             //#region Variables
             this.actionDelay = 0;
             this.editMode = false;
-            // focusedPosition: number;
             this.inputBarType = "search";
             this.properties = {
                 shortcutFocusBookmarkList: " ",
                 shortcutFocusSearchField: " ",
                 shortcutRemoveBookmark: " ",
-                shortcutAddBookmark: " "
+                shortcutAddBookmark: " ",
+                shortcutUseDefaults: " "
             };
             this.showButtons = false;
             this.showFocused = true;
@@ -164,7 +164,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                 if (v !== this._headerInput) {
                     try {
                         this._headerInput = v;
-                        if (!(this.inputStates.relStateName === eStateName.addBookmark.toString())) {
+                        if (!(this.inputStates.relStateName === eStateName.addBookmark)) {
                             this.bookmarkList.obj.searchFor(!v ? "" : v)
                                 .then(function () {
                                 _this.bookmarkList.obj.emit("changed", utils_1.calcNumbreOfVisRows(_this.elementHeight));
@@ -189,19 +189,20 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                 return this._focusedPosition;
             },
             set: function (v) {
-                if (v !== this._focusedPosition) {
-                    this.logger.info("v", v);
+                this.logger.info("v", v);
+                if (!v || v !== this._focusedPosition) {
                     this._focusedPosition = v;
-                    if (!v || v < 0) {
+                    if (v < 0) {
                         this.logger.info("in if");
-                        this.menuList[0].isEnabled = false;
-                        this.menuList[2].isEnabled = false;
-                    }
-                    else {
-                        this.logger.info("in else");
                         this.menuList[0].isEnabled = true;
                         this.menuList[2].isEnabled = true;
                     }
+                    else {
+                        this.logger.info("in else");
+                        this.menuList[0].isEnabled = false;
+                        this.menuList[2].isEnabled = false;
+                    }
+                    this.menuList = JSON.parse(JSON.stringify(this.menuList));
                 }
             },
             enumerable: true,
@@ -267,30 +268,25 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                     this.removeBookmark(this.bookmarkList.collection[this.focusedPosition].id[0]);
                     break;
                 case "Add Bookmark":
-                    this.controllingInputBarOptions("addBookmark");
+                    this.controllingInputBarOptions(eStateName.addBookmark);
                     break;
             }
         };
         /**
          * shortcuthandler, called when shortcut is hit
-         * @param objectShortcut object wich gives you the shortcut name and the element, from which the shortcut come from
+         * @param shortcutObject object wich gives you the shortcut name and the element, from which the shortcut come from
          */
-        BookmarkController.prototype.shortcutHandler = function (objectShortcut) {
-            switch (objectShortcut.objectShortcut.name) {
+        BookmarkController.prototype.shortcutHandler = function (shortcutObject, domcontainer) {
+            this.logger.info("", shortcutObject);
+            switch (shortcutObject.name) {
                 //#region focusList
                 case "focusList":
                     try {
                         this.showFocused = true;
                         this.timeout();
-                        if (this.focusedPosition < 0) {
+                        if (this.focusedPosition < 0 || this.focusedPosition >= this.bookmarkList.collection.length) {
                             this.focusedPosition = 0;
-                            objectShortcut.element.children().children().children()[0].focus();
-                            this.timeout();
-                            return true;
-                        }
-                        if (this.focusedPosition >= this.bookmarkList.collection.length) {
-                            this.focusedPosition = 0;
-                            objectShortcut.element.children().children().children()[0].focus();
+                            domcontainer.element.children().children().children()[0].focus();
                             this.timeout();
                             return true;
                         }
@@ -302,7 +298,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                             this.bookmarkList.itemsPagingTop
                                 = this.focusedPosition - (utils_1.calcNumbreOfVisRows(this.elementHeight) + 1);
                         }
-                        objectShortcut.element.children().children().children().children()[this.focusedPosition - this.bookmarkList.itemsPagingTop].focus();
+                        domcontainer.element.children().children().children().children()[this.focusedPosition - this.bookmarkList.itemsPagingTop].focus();
                         return true;
                     }
                     catch (e) {
@@ -330,12 +326,12 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                 //#endregion
                 //#region addBookmark
                 case "addBookmark":
-                    this.controllingInputBarOptions("addBookmark");
+                    this.controllingInputBarOptions(eStateName.addBookmark);
                     break;
                 //#endregion
                 //#region searchBookmark
                 case "searchBookmark":
-                    this.controllingInputBarOptions("searchBookmark");
+                    this.controllingInputBarOptions(eStateName.searchBookmark);
                     break;
             }
             return false;
@@ -345,7 +341,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
          */
         BookmarkController.prototype.extensionHeaderAccept = function () {
             switch (this.inputStates.relStateName) {
-                case eStateName.addBookmark.toString():
+                case eStateName.addBookmark:
                     this.addBookmark();
                     break;
             }
@@ -380,11 +376,11 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
          */
         BookmarkController.prototype.controllingInputBarOptions = function (type) {
             switch (type) {
-                case "addBookmark":
-                    this.inputStates.relStateName = eStateName.addBookmark.toString();
+                case eStateName.addBookmark:
+                    this.inputStates.relStateName = eStateName.addBookmark;
                     break;
-                case "searchBookmark":
-                    this.inputStates.relStateName = eStateName.searchBookmark.toString();
+                case eStateName.searchBookmark:
+                    this.inputStates.relStateName = eStateName.searchBookmark;
                     break;
             }
             this.inputBarFocus = true;
@@ -471,13 +467,13 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
          */
         BookmarkController.prototype.initInputStates = function () {
             var addBookmarkState = {
-                name: eStateName.addBookmark.toString(),
+                name: eStateName.addBookmark,
                 icon: "lui-icon--bookmark",
                 placeholder: "enter Bookmark Name",
                 acceptFunction: this.addBookmark
             };
             this.inputStates.addState(addBookmarkState);
-            this.inputStates.relStateName = "";
+            this.inputStates.relStateName = null;
         };
         /**
          * creates a new bookmark

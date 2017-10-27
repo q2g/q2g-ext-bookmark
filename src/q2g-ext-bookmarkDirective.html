@@ -1,0 +1,57 @@
+<div class="root-container"
+     ng-class="{'root-container-{{vm.theme}}':true}"
+     tabindex="0"
+     q2g-shortcut-scope="rootelement"
+     style="height:100%; width:100%">
+
+     <div q2g-shortcut-scope
+          shortcut="[{name:'escList', shortcut:'27'}]"
+          shortcut-action="vm.shortcutHandler(shortcutObject, domcontainer)">
+        <div>
+            <q2g-extension-header max-number-of-elements="5"
+                                  reserved-button-width="0.5"
+                                  title="vm.titleDimension"                                  
+                                  theme="vm.theme"
+                                  
+                                  input-accept="vm.extensionHeaderAccept()"
+                                  input-field="vm.headerInput"
+                                  input-bar-logo="vm.inputStates.relState.icon"
+                                  input-bar-placeholder="vm.inputStates.relState.placeholder"
+                                  input-bar-visible="vm.showSearchField"
+                                  input-bar-focus="vm.inputBarFocus"
+
+                                  menu-visible="vm.showButtons"
+                                  menu-callback="vm.menuListActionCallback(item)"
+                                  menu-list="vm.menuList">
+            </q2g-extension-header>
+        </div>
+        <div q2g-shortcut
+             shortcut="[
+                {name:'focusList', shortcut:vm.properties.shortcutFocusBookmarkList, rootscope: '|global|'},
+                {name:'addBookmark', shortcut:vm.properties.shortcutAddBookmark},
+                {name:'searchBookmark', shortcut:vm.properties.shortcutFocusSearchField},
+                {name:'removeBookmark', shortcut:vm.properties.shortcutRemoveBookmark}
+            ]"
+             shortcut-action="vm.shortcutHandler(shortcutObject, domcontainer)">
+            <q2g-listview style="height: calc(100% - 90px);"
+                          tabindex="0"
+                          items="vm.bookmarkList.collection"
+                          items-count="vm.bookmarkList.itemsCounter"
+                          items-page-top="vm.bookmarkList.itemsPagingTop"
+                          items-page-height="vm.bookmarkList.itemsPagingHeight"
+                          item-height="31"
+                          item-focused="vm.focusedPosition"
+                          show-focused="vm.showFocused"
+                          callback-listview-objects="vm.selectObjectCallback(pos)"
+                          theme="vm.theme">
+            </q2g-listview>
+        </div>
+    </div>
+    
+    <q2g-identifier show="vm.isEditMode()">         
+    </q2g-identifier>
+
+    <div ng-if="vm.isEditMode()"
+          class="editMode">
+    </div>
+</div>

@@ -1,6 +1,7 @@
 ﻿
 //#region Imports
 import { Logging } from "../utils/logger";
+import { IDomContainer } from "../utils/utils";
 //#endregion
 
 class ShortcutInputObject implements IShortcutObject {
@@ -28,23 +29,20 @@ export interface IShortcutObject {
 
 interface IShortcutHandlerObject {
     /**
-     * TODO
+     * A wraper of an dom element, needed to get the element return to the caller
      */
-    domcontainer: {
-        element: JQuery;
-    };
+    domcontainer: IDomContainer;
 
-    event: JQueryKeyEventObject;
     /**
-     * TODO
+     * the event calld when the shortcut handler gets triggered
+     */
+    event: JQueryKeyEventObject;
+
+    /**
+     * the object, which hold the information about the shortcut which got fired
      */
     shortcutObject: IShortcutObject;
 }
-
-export interface IDomContainer {
-    element: JQuery;
-}
-
 
 class ShortCutController implements ng.IController {
     static $inject = ["$element"];

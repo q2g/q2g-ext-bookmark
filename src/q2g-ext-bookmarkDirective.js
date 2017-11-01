@@ -175,6 +175,12 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                                 _this.logger.error("error", error);
                             });
                         }
+                        else {
+                            if (this.menuList[0].isEnabled) {
+                                this.menuList[0].isEnabled = false;
+                                this.menuList = JSON.parse(JSON.stringify(this.menuList));
+                            }
+                        }
                     }
                     catch (error) {
                         this.logger.error("ERROR", error);
@@ -263,6 +269,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
          * @param item name of the button which got activated
          */
         BookmarkController.prototype.menuListActionCallback = function (item) {
+            this.logger.info("callback", item);
             switch (item) {
                 case "Remove Bookmark":
                     this.removeBookmark(this.bookmarkList.collection[this.focusedPosition].id[0]);
@@ -270,6 +277,8 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                 case "Add Bookmark":
                     this.controllingInputBarOptions(eStateName.addBookmark);
                     break;
+                case "Confirm Selection":
+                    this.applyButtonAction();
             }
         };
         /**
@@ -498,6 +507,14 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             }
             catch (error) {
                 this.logger.error("Error in setter of input Accept", error);
+            }
+        };
+        BookmarkController.prototype.applyButtonAction = function () {
+            if (this.inputStates.relStateName === eStateName.addBookmark) {
+                this.addBookmark();
+            }
+            else {
+                this.selectObjectCallback(this.focusedPosition);
             }
         };
         //#endregion

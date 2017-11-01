@@ -4,8 +4,8 @@
       "packages",
       "obj",
       "bin",
-      "lib/davinci.js/src/node_modules",
-      "lib/davinci.js/src/packages"
+      "lib/davinci.js/node_modules",
+      "lib/davinci.js/packages"
     ],
     "compilerOptions": {
       "module": "amd",

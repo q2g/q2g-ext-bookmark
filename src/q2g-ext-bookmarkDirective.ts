@@ -4,7 +4,7 @@ import { ListViewDirectiveFactory, IDataModelItem } from "./lib/daVinci.js/src/d
 import { IdentifierDirectiveFactory } from "./lib/daVinci.js/src/directives/identifier";
 import { Q2gListAdapter, Q2gListObject, Q2gIndObject } from "./lib/daVinci.js/src/utils/object";
 import { ScrollBarDirectiveFactory } from "./lib/daVinci.js/src/directives/scrollBar";
-import { ShortCutDirectiveFactory, IShortcutObject, IDomContainer } from "./lib/daVinci.js/src/directives/shortcut";
+import { ShortCutDirectiveFactory, IShortcutObject } from "./lib/daVinci.js/src/directives/shortcut";
 import { ExtensionHeaderDirectiveFactory } from "./lib/daVinci.js/src/directives/extensionHeader";
 
 import { calcNumbreOfVisRows,
@@ -13,7 +13,8 @@ import { calcNumbreOfVisRows,
          AssistHyperCubeBookmarks,
          IMenuElement,
          StateMachineInput,
-         IStateMachineState}
+         IStateMachineState,
+         IDomContainer}
     from "./lib/daVinci.js/src/utils/utils";
 import * as template from "text!./q2g-ext-bookmarkDirective.html";
 //#endregion
@@ -172,6 +173,11 @@ class BookmarkController implements ng.IController {
                     .catch((error) => {
                         this.logger.error("error", error);
                     });
+                } else {
+                    if(this.menuList[0].isEnabled) {
+                        this.menuList[0].isEnabled = false;
+                        this.menuList = JSON.parse(JSON.stringify(this.menuList));
+                    }
                 }
             } catch (error) {
                 this.logger.error("ERROR", error);
@@ -294,16 +300,19 @@ class BookmarkController implements ng.IController {
      * @param item name of the button which got activated
      */
     menuListActionCallback(item: string): void {
+        this.logger.info("callback", item);
         switch (item) {
             case "Remove Bookmark":
                 this.removeBookmark(this.bookmarkList.collection[this.focusedPosition].id[0] as string);
                 break;
 
             case "Add Bookmark":
-            this.controllingInputBarOptions(eStateName.addBookmark);
+                this.controllingInputBarOptions(eStateName.addBookmark);
                 break;
-        }
 
+            case "Confirm Selection":
+                this.applyButtonAction();
+        }
     }
 
     /**
@@ -550,6 +559,14 @@ class BookmarkController implements ng.IController {
             this.headerInput = null;
         } catch (error) {
             this.logger.error("Error in setter of input Accept", error);
+        }
+    }
+
+    private applyButtonAction() {
+        if(this.inputStates.relStateName === eStateName.addBookmark) {
+            this.addBookmark();
+        } else {
+            this.selectObjectCallback(this.focusedPosition);
         }
     }
 }

@@ -11,7 +11,7 @@ D*  | Name             |  Description
 ----|------------------|--------------------------------------------
  <  | shortcut         | mandatory; the shortcut(s)
  <  | shortcutOverride | mandatory; same like shortcuts but easy possibility to merge / override only some shortcuts / parts
- \<\? | shortcutRootscope| optional; Rootscope for the shortcut
+ \<\? | shortcutRootscope| optional; Rootscope for the shortcut; use "\|global\|" to registrate on document 
  \&\? | shortcutAction   | optional; action that is called for shortcut
  \<\? | shortcutPreventdefault | optional; cancels the default action that belongs to the element
  \<\? | shortcutTriggerHandler | optional; event which is triggered when shortcut is called
@@ -26,7 +26,7 @@ string | shortcut | mandatory; the shortcut
 string | name | mandatory; name of the shortcut, to be identified in the in the handler function outside of the directive
 boolean? | preventdefault | optional; cancels the default action that belongs to the element
 string? | action | optional; action that is called for shortcut
-string? | rootscope | optional; Rootscope for the shortcut
+string? | rootscope | optional; Rootscope for the shortcut; use "\|global\|" to registrate on document
 string? | triggerHandler | optional; event which is triggered when shortcut is called
 
 ### possible Actions
@@ -68,14 +68,14 @@ to implement more than one shortcut on an element you can insert an Array in the
             {name: 'enter'; shortcut: 'ctrl + alt + 13'},
             {name: 'esc'; shortcut: 'ctrl + alt + 27'}
         ]"
-        shortcut-action="vm.shortcutHandler(objectShortcut)">
+        shortcut-action="vm.shortcutHandler(shortcutObject)">
     Enter
 </button>
 ```
 
 ```typescript
 shortcutHandler(objcet: IShortcutHandlerObject): void {
-    switch(objcet.objectShortcut.name) {
+    switch(objcet.shortcutObject.name) {
         case "enter":
             console.log("Shortcut ENTER called");
         case "esc":
@@ -163,7 +163,7 @@ The next example shows how to namespace shortcuts. This means that it`s possible
                             {name: 'enter2'; shortcut: 'ctrl + alt + 84', rootscope: 'section1'},
                             {name: 'enter3'; shortcut: 'ctrl + alt + 85', rootscope: 'section2'}
                         ]"
-                        shortcut-action="vm.shortcutHandler(objectShortcut)">
+                        shortcut-action="vm.shortcutHandler(shortcutObject)">
                     Enter
                 </button>
             </div>
@@ -174,7 +174,7 @@ The next example shows how to namespace shortcuts. This means that it`s possible
 
 ```typescript
 shortcutHandler(objcet: IShortcutHandlerObject): void {
-    switch(objcet.objectShortcut.name) {
+    switch(objcet.shortcutObject.name) {
         case "enter1":
             console.log("Shortcut for local called");
         case "enter2":

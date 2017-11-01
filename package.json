@@ -1,0 +1,20 @@
+{
+  "name": "davinci.js",
+  "version": "0.0.3",
+  "license": "MIT",
+  "description": "Framework for visualisation extensions",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/q2g/daVinci.js"
+  },
+  "author": "Thomas Häning, Konrad Mattheis (qlik2go) ",
+  "devDependencies": {
+    "@types/angular": "1.6.36",
+    "@types/jquery": "3.2.16",
+    "@types/qlik-engineapi": "12.34.0"
+  },
+  "dependencies": {
+    
+    "typescript.events": "^7.9.0"
+  }
+}

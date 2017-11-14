@@ -1,21 +1,5 @@
 //#region imports
-import { Logging } from "./lib/daVinci.js/src/utils/logger";
-import { ListViewDirectiveFactory, IDataModelItem } from "./lib/daVinci.js/src/directives/listview";
-import { IdentifierDirectiveFactory } from "./lib/daVinci.js/src/directives/identifier";
-import { Q2gListAdapter, Q2gListObject, Q2gIndObject } from "./lib/daVinci.js/src/utils/object";
-import { ScrollBarDirectiveFactory } from "./lib/daVinci.js/src/directives/scrollBar";
-import { ShortCutDirectiveFactory, IShortcutObject } from "./lib/daVinci.js/src/directives/shortcut";
-import { ExtensionHeaderDirectiveFactory } from "./lib/daVinci.js/src/directives/extensionHeader";
-
-import { calcNumbreOfVisRows,
-         templateReplacer,
-         checkDirectiveIsRegistrated,
-         AssistHyperCubeBookmarks,
-         IMenuElement,
-         StateMachineInput,
-         IStateMachineState,
-         IDomContainer}
-    from "./lib/daVinci.js/src/utils/utils";
+import { utils, logging, directives } from "../node_modules/davinci.js/dist/daVinci";
 import * as template from "text!./q2g-ext-bookmarkDirective.html";
 //#endregion
 
@@ -42,11 +26,11 @@ class BookmarkController implements ng.IController {
 
     //#region Variables
     actionDelay: number = 0;
-    bookmarkList: Q2gListAdapter;
+    bookmarkList: utils.IQ2gListAdapter;
     editMode: boolean = false;
     element: JQuery;
     inputBarType: string = "search";
-    menuList: Array<IMenuElement>;
+    menuList: Array<utils.IMenuElement>;
     properties: IShortcutProperties = {
         shortcutFocusBookmarkList: " ",
         shortcutFocusSearchField: " ",
@@ -60,7 +44,7 @@ class BookmarkController implements ng.IController {
     timeout: ng.ITimeoutService;
     titleDimension: string = "Bookmarks";
     selectBookmarkToggle: boolean = true;
-    inputStates: StateMachineInput<eStateName> = new StateMachineInput<eStateName>();
+    inputStates = new utils.StateMachineInput<eStateName>();
     inputBarFocus: boolean = false;
     //#endregion
 
@@ -74,7 +58,7 @@ class BookmarkController implements ng.IController {
             try {
                 this._elementHeight = value;
                 if (this.bookmarkList && this.bookmarkList.obj) {
-                    this.bookmarkList.obj.emit("changed", calcNumbreOfVisRows(this.elementHeight));
+                    this.bookmarkList.obj.emit("changed", utils.calcNumbreOfVisRows(this.elementHeight));
                 }
             } catch (err) {
                 this.logger.error("error in setter of elementHeight", err);
@@ -116,10 +100,10 @@ class BookmarkController implements ng.IController {
                         this.getLayout()
                         .then((bookmarkLayout: EngineAPI.IGenericBookmarkListLayout) => {
 
-                            let bookmarkObject = new Q2gIndObject(
-                                new AssistHyperCubeBookmarks(bookmarkLayout));
+                            let bookmarkObject = new utils.Q2gIndObject(
+                                new utils.AssistHyperCubeBookmarks(bookmarkLayout));
 
-                            that.bookmarkList = new Q2gListAdapter(bookmarkObject, calcNumbreOfVisRows(that.elementHeight),
+                            that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject, utils.calcNumbreOfVisRows(that.elementHeight),
                                 bookmarkLayout.qBookmarkList.qItems.length, "bookmark");
                         })
                         .catch((error) => {
@@ -166,7 +150,7 @@ class BookmarkController implements ng.IController {
                 if (!(this.inputStates.relStateName === eStateName.addBookmark)) {
                     this.bookmarkList.obj.searchFor(!v? "": v)
                     .then(() => {
-                        this.bookmarkList.obj.emit("changed", calcNumbreOfVisRows(this.elementHeight));
+                        this.bookmarkList.obj.emit("changed", utils.calcNumbreOfVisRows(this.elementHeight));
                         this.bookmarkList.itemsCounter = (this.bookmarkList.obj as any).model.calcCube.length;
                         this.timeout();
                     })
@@ -212,11 +196,11 @@ class BookmarkController implements ng.IController {
     //#endregion
 
     //#region logger
-    private _logger: Logging.Logger;
-    private get logger(): Logging.Logger {
+    private _logger: logging.Logger;
+    private get logger(): logging.Logger {
         if (!this._logger) {
             try {
-                this._logger = new Logging.Logger("BookmarkController");
+                this._logger = new logging.Logger("BookmarkController");
             } catch (e) {
                 this.logger.error("ERROR in create logger instance", e);
             }
@@ -319,7 +303,7 @@ class BookmarkController implements ng.IController {
      * shortcuthandler, called when shortcut is hit
      * @param shortcutObject object wich gives you the shortcut name and the element, from which the shortcut come from
      */
-    shortcutHandler(shortcutObject: IShortcutObject, domcontainer: IDomContainer): boolean {
+    shortcutHandler(shortcutObject: directives.IShortcutObject, domcontainer: utils.IDomContainer): boolean {
         this.logger.info("",shortcutObject);
         switch (shortcutObject.name) {
 
@@ -338,9 +322,9 @@ class BookmarkController implements ng.IController {
                 if (this.focusedPosition < this.bookmarkList.itemsPagingTop) {
                     this.bookmarkList.itemsPagingTop = this.focusedPosition;
                 } else if (this.focusedPosition >
-                    this.bookmarkList.itemsPagingTop + calcNumbreOfVisRows(this.elementHeight)) {
+                    this.bookmarkList.itemsPagingTop + utils.calcNumbreOfVisRows(this.elementHeight)) {
                     this.bookmarkList.itemsPagingTop
-                        = this.focusedPosition - (calcNumbreOfVisRows(this.elementHeight) + 1);
+                        = this.focusedPosition - (utils.calcNumbreOfVisRows(this.elementHeight) + 1);
                 }
 
                     domcontainer.element.children().children().children().children()[
@@ -526,7 +510,7 @@ class BookmarkController implements ng.IController {
      */
     private initInputStates(): void {
 
-        let addBookmarkState: IStateMachineState<eStateName> = {
+        let addBookmarkState: utils.IStateMachineState<eStateName> = {
             name: eStateName.addBookmark,
             icon: "lui-icon--bookmark",
             placeholder: "enter Bookmark Name",
@@ -577,7 +561,7 @@ export function BookmarkDirectiveFactory(rootNameSpace: string): ng.IDirectiveFa
         return {
             restrict: "E",
             replace: true,
-            template: templateReplacer(template, rootNameSpace),
+            template: utils.templateReplacer(template, rootNameSpace),
             controller: BookmarkController,
             controllerAs: "vm",
             scope: {},
@@ -587,16 +571,14 @@ export function BookmarkDirectiveFactory(rootNameSpace: string): ng.IDirectiveFa
                 editMode: "<?"
             },
             compile: ():void => {
-                checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
-                    ListViewDirectiveFactory(rootNameSpace), "Listview");
-                checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
-                    IdentifierDirectiveFactory(rootNameSpace), "Identifier");
-                checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
-                    ShortCutDirectiveFactory(rootNameSpace), "Shortcut");
-                checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
-                    ScrollBarDirectiveFactory(rootNameSpace), "ScrollBar");
-                checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
-                    ExtensionHeaderDirectiveFactory(rootNameSpace), "ExtensionHeader");
+                utils.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
+                    directives.ListViewDirectiveFactory(rootNameSpace), "Listview");
+                utils.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
+                    directives.IdentifierDirectiveFactory(rootNameSpace), "Identifier");
+                utils.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
+                    directives.ShortCutDirectiveFactory(rootNameSpace), "Shortcut");
+                utils.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace,
+                    directives.ExtensionHeaderDirectiveFactory(rootNameSpace), "ExtensionHeader");
             }
         };
     };

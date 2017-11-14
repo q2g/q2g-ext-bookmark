@@ -1,13 +1,24 @@
-define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinci.js/src/directives/listview", "./lib/daVinci.js/src/directives/identifier", "./lib/daVinci.js/src/utils/object", "./lib/daVinci.js/src/directives/scrollBar", "./lib/daVinci.js/src/directives/shortcut", "./lib/daVinci.js/src/directives/extensionHeader", "./lib/daVinci.js/src/utils/utils", "text!./q2g-ext-bookmarkDirective.html"], function (require, exports, logger_1, listview_1, identifier_1, object_1, scrollBar_1, shortcut_1, extensionHeader_1, utils_1, template) {
+(function (factory) {
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === "function" && define.amd) {
+        define(["require", "exports", "../node_modules/davinci.js/dist/daVinci", "text!./q2g-ext-bookmarkDirective.html"], factory);
+    }
+})(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    //#region imports
+    var daVinci_1 = require("../node_modules/davinci.js/dist/daVinci");
+    var template = require("text!./q2g-ext-bookmarkDirective.html");
     //#endregion
     var eStateName;
     (function (eStateName) {
         eStateName[eStateName["addBookmark"] = 0] = "addBookmark";
         eStateName[eStateName["searchBookmark"] = 1] = "searchBookmark";
     })(eStateName || (eStateName = {}));
-    var BookmarkController = (function () {
+    var BookmarkController = /** @class */ (function () {
         /**
          * init of the controller for the Directive
          * @param timeout
@@ -31,7 +42,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             this.showSearchField = false;
             this.titleDimension = "Bookmarks";
             this.selectBookmarkToggle = true;
-            this.inputStates = new utils_1.StateMachineInput();
+            this.inputStates = new daVinci_1.utils.StateMachineInput();
             this.inputBarFocus = false;
             //#endregion
             //#region elementHeight
@@ -75,7 +86,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                     try {
                         this._elementHeight = value;
                         if (this.bookmarkList && this.bookmarkList.obj) {
-                            this.bookmarkList.obj.emit("changed", utils_1.calcNumbreOfVisRows(this.elementHeight));
+                            this.bookmarkList.obj.emit("changed", daVinci_1.utils.calcNumbreOfVisRows(this.elementHeight));
                         }
                     }
                     catch (err) {
@@ -118,8 +129,8 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                                 var _this = this;
                                 this.getLayout()
                                     .then(function (bookmarkLayout) {
-                                    var bookmarkObject = new object_1.Q2gIndObject(new utils_1.AssistHyperCubeBookmarks(bookmarkLayout));
-                                    that.bookmarkList = new object_1.Q2gListAdapter(bookmarkObject, utils_1.calcNumbreOfVisRows(that.elementHeight), bookmarkLayout.qBookmarkList.qItems.length, "bookmark");
+                                    var bookmarkObject = new daVinci_1.utils.Q2gIndObject(new daVinci_1.utils.AssistHyperCubeBookmarks(bookmarkLayout));
+                                    that.bookmarkList = new daVinci_1.utils.Q2gListAdapter(bookmarkObject, daVinci_1.utils.calcNumbreOfVisRows(that.elementHeight), bookmarkLayout.qBookmarkList.qItems.length, "bookmark");
                                 })
                                     .catch(function (error) {
                                     _this.logger.error("Error in on change of bookmark object", error);
@@ -167,7 +178,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                         if (!(this.inputStates.relStateName === eStateName.addBookmark)) {
                             this.bookmarkList.obj.searchFor(!v ? "" : v)
                                 .then(function () {
-                                _this.bookmarkList.obj.emit("changed", utils_1.calcNumbreOfVisRows(_this.elementHeight));
+                                _this.bookmarkList.obj.emit("changed", daVinci_1.utils.calcNumbreOfVisRows(_this.elementHeight));
                                 _this.bookmarkList.itemsCounter = _this.bookmarkList.obj.model.calcCube.length;
                                 _this.timeout();
                             })
@@ -218,7 +229,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             get: function () {
                 if (!this._logger) {
                     try {
-                        this._logger = new logger_1.Logging.Logger("BookmarkController");
+                        this._logger = new daVinci_1.logging.Logger("BookmarkController");
                     }
                     catch (e) {
                         this.logger.error("ERROR in create logger instance", e);
@@ -303,9 +314,9 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                             this.bookmarkList.itemsPagingTop = this.focusedPosition;
                         }
                         else if (this.focusedPosition >
-                            this.bookmarkList.itemsPagingTop + utils_1.calcNumbreOfVisRows(this.elementHeight)) {
+                            this.bookmarkList.itemsPagingTop + daVinci_1.utils.calcNumbreOfVisRows(this.elementHeight)) {
                             this.bookmarkList.itemsPagingTop
-                                = this.focusedPosition - (utils_1.calcNumbreOfVisRows(this.elementHeight) + 1);
+                                = this.focusedPosition - (daVinci_1.utils.calcNumbreOfVisRows(this.elementHeight) + 1);
                         }
                         domcontainer.element.children().children().children().children()[this.focusedPosition - this.bookmarkList.itemsPagingTop].focus();
                         return true;
@@ -527,7 +538,7 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
             return {
                 restrict: "E",
                 replace: true,
-                template: utils_1.templateReplacer(template, rootNameSpace),
+                template: daVinci_1.utils.templateReplacer(template, rootNameSpace),
                 controller: BookmarkController,
                 controllerAs: "vm",
                 scope: {},
@@ -537,11 +548,10 @@ define(["require", "exports", "./lib/daVinci.js/src/utils/logger", "./lib/daVinc
                     editMode: "<?"
                 },
                 compile: function () {
-                    utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, listview_1.ListViewDirectiveFactory(rootNameSpace), "Listview");
-                    utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, identifier_1.IdentifierDirectiveFactory(rootNameSpace), "Identifier");
-                    utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, shortcut_1.ShortCutDirectiveFactory(rootNameSpace), "Shortcut");
-                    utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, scrollBar_1.ScrollBarDirectiveFactory(rootNameSpace), "ScrollBar");
-                    utils_1.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, extensionHeader_1.ExtensionHeaderDirectiveFactory(rootNameSpace), "ExtensionHeader");
+                    daVinci_1.utils.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, daVinci_1.directives.ListViewDirectiveFactory(rootNameSpace), "Listview");
+                    daVinci_1.utils.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, daVinci_1.directives.IdentifierDirectiveFactory(rootNameSpace), "Identifier");
+                    daVinci_1.utils.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, daVinci_1.directives.ShortCutDirectiveFactory(rootNameSpace), "Shortcut");
+                    daVinci_1.utils.checkDirectiveIsRegistrated($injector, $registrationProvider, rootNameSpace, daVinci_1.directives.ExtensionHeaderDirectiveFactory(rootNameSpace), "ExtensionHeader");
                 }
             };
         };

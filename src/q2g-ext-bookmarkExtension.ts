@@ -1,31 +1,30 @@
-/// <reference path="lib/daVinci.js/src/utils/utils.ts" />
-
 //#region Imports
 import * as qvangular from "qvangular";
 import * as qlik from "qlik";
-import * as template from "text!./q2g-ext-bookmark.html";
-
-import { Logging } from "./lib/daVinci.js/src/utils/logger";
+import * as template from "text!./q2g-ext-bookmarkExtension.html";
+import { utils, logging, services, version } from "../node_modules/davinci.js/dist/daVinci";
 import { BookmarkDirectiveFactory, IShortcutProperties } from "./q2g-ext-bookmarkDirective";
-import { getEnigma, checkDirectiveIsRegistrated } from "./lib/daVinci.js/src/utils/utils";
-import { RegistrationProvider, IRegistrationProvider } from "./lib/daVinci.js/src/services/registration";
 //#endregion
 
-qvangular.service<IRegistrationProvider>("$registrationProvider", RegistrationProvider)
+//#region registrate services
+qvangular.service<services.IRegistrationProvider>("$registrationProvider", services.RegistrationProvider)
 .implementObject(qvangular);
-
-//#region Logger
-Logging.LogConfig.SetLogLevel("*", Logging.LogLevel.info);
-let logger = new Logging.Logger("Main");
 //#endregion
 
+//#region interfaces
 interface IDataProperties {
     properties: IShortcutProperties;
 }
+//#endregion
+
+//#region Logger
+logging.LogConfig.SetLogLevel("*", logging.LogLevel.info);
+let logger = new logging.Logger("Main");
+//#endregion
 
 //#region Directives
 var $injector = qvangular.$injector;
-checkDirectiveIsRegistrated($injector, qvangular, "", BookmarkDirectiveFactory("Bookmarkextension"),
+utils.checkDirectiveIsRegistrated($injector, qvangular, "", BookmarkDirectiveFactory("Bookmarkextension"),
     "BookmarkExtension");
 //#endregion
 
@@ -117,11 +116,12 @@ let parameter = {
 //#endregion
 
 class BookmarkExtension {
+
+    model: EngineAPI.IGenericObject;
+
     constructor(model: EngineAPI.IGenericObject) {
         this.model = model;
     }
-
-    model: EngineAPI.IGenericObject;
 
     public isEditMode() {
         if (qlik.navigation.getMode() === "analysis") {
@@ -130,16 +130,14 @@ class BookmarkExtension {
             return true;
         }
     }
-
 }
 
 export = {
     definition: parameter,
     initialProperties: { },
     template: template,
-    controller: ["$scope", function (
-        scope: IVMScope<BookmarkExtension>) {
-        scope.vm = new BookmarkExtension(getEnigma(scope));
+    controller: ["$scope", function (scope: utils.IVMScope<BookmarkExtension>) {
+        scope.vm = new BookmarkExtension(utils.getEnigma(scope));
     }]
 };
 

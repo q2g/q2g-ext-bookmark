@@ -176,15 +176,12 @@ class BookmarkController implements ng.IController {
         return this._focusedPosition;
     }
     public set focusedPosition(v : number) {
-        this.logger.info("v", v);
         if (!v || v !== this._focusedPosition) {
             this._focusedPosition = v;
             if (v < 0) {
-                this.logger.info("in if");
                 this.menuList[0].isEnabled = true;
                 this.menuList[2].isEnabled = true;
             } else {
-                this.logger.info("in else");
                 this.menuList[0].isEnabled = false;
                 this.menuList[2].isEnabled = false;
 
@@ -284,7 +281,6 @@ class BookmarkController implements ng.IController {
      * @param item name of the button which got activated
      */
     menuListActionCallback(item: string): void {
-        this.logger.info("callback", item);
         switch (item) {
             case "Remove Bookmark":
                 this.removeBookmark(this.bookmarkList.collection[this.focusedPosition].id[0] as string);
@@ -304,7 +300,6 @@ class BookmarkController implements ng.IController {
      * @param shortcutObject object wich gives you the shortcut name and the element, from which the shortcut come from
      */
     shortcutHandler(shortcutObject: directives.IShortcutObject, domcontainer: utils.IDomContainer): boolean {
-        this.logger.info("",shortcutObject);
         switch (shortcutObject.name) {
 
             //#region focusList

@@ -1,9 +1,9 @@
 //#region Imports
 import * as qvangular from "qvangular";
 import * as qlik from "qlik";
-import * as template from "text!./src/q2g-ext-bookmark.html";
-import { utils, logging, services, version } from "./node_modules/davinci.js/dist/daVinci";
-import { BookmarkDirectiveFactory, IShortcutProperties } from "./src/q2g-ext-bookmarkDirective";
+import * as template from "text!./q2g-ext-bookmarkExtension.html";
+import { utils, logging, services, version } from "../node_modules/davinci.js/dist/daVinci";
+import { BookmarkDirectiveFactory, IShortcutProperties } from "./q2g-ext-bookmarkDirective";
 //#endregion
 
 //#region registrate services

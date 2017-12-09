@@ -1,6 +1,7 @@
 # Bookmark Extension
 [![Greenkeeper badge](https://badges.greenkeeper.io/q2g/q2g-ext-bookmark.svg)](https://greenkeeper.io/)
 [![TravisCI](https://travis-ci.org/q2g/q2g-ext-bookmark.svg?branch=master)](https://travis-ci.org/q2g/q2g-ext-bookmark)
+[![Downloads](https://m.sense2go.net/downloads.svg?q2g-ext-bookmark)](https://m.sense2go.net/extension-package)
 
 This extensions developed for blind users to handle bookmarks with full keyboard control and full JAWS support.
 

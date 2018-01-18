@@ -10,7 +10,7 @@ node_modules/
 dist/
 
 ## Include
-!q2g-ext-selector.js
+!q2g-ext-bookmark.js
 !gulpfile.js
 
 ## Standard vccode

@@ -2,7 +2,7 @@
 import * as qvangular from "qvangular";
 import * as qlik from "qlik";
 import * as template from "text!./q2g-ext-bookmarkExtension.html";
-import { utils, logging, services, version } from "../node_modules/davinci.js/dist/daVinci";
+import { utils, logging, services, version } from "../node_modules/davinci.js/dist/umd/daVinci";
 import { BookmarkDirectiveFactory, IShortcutProperties } from "./q2g-ext-bookmarkDirective";
 //#endregion
 

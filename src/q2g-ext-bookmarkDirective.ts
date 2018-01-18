@@ -1,5 +1,5 @@
 //#region imports
-import { utils, logging, directives } from "../node_modules/davinci.js/dist/daVinci";
+import { utils, logging, directives } from "../node_modules/davinci.js/dist/umd/daVinci";
 import * as template from "text!./q2g-ext-bookmarkDirective.html";
 //#endregion
 
@@ -57,9 +57,6 @@ class BookmarkController implements ng.IController {
         if (this.elementHeight !== value) {
             try {
                 this._elementHeight = value;
-                if (this.bookmarkList && this.bookmarkList.obj) {
-                    this.bookmarkList.obj.emit("changed", utils.calcNumbreOfVisRows(this.elementHeight));
-                }
             } catch (err) {
                 this.logger.error("error in setter of elementHeight", err);
             }
@@ -103,8 +100,8 @@ class BookmarkController implements ng.IController {
                             let bookmarkObject = new utils.Q2gIndObject(
                                 new utils.AssistHyperCubeBookmarks(bookmarkLayout));
 
-                            that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject, utils.calcNumbreOfVisRows(that.elementHeight),
-                                bookmarkLayout.qBookmarkList.qItems.length, "bookmark");
+                            that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject,
+                                bookmarkLayout.qBookmarkList.qItems.length, 0, "bookmark");
                         })
                         .catch((error) => {
                             this.logger.error("Error in on change of bookmark object", error);
@@ -150,7 +147,7 @@ class BookmarkController implements ng.IController {
                 if (!(this.inputStates.relStateName === eStateName.addBookmark)) {
                     this.bookmarkList.obj.searchFor(!v? "": v)
                     .then(() => {
-                        this.bookmarkList.obj.emit("changed", utils.calcNumbreOfVisRows(this.elementHeight));
+                        this.bookmarkList.obj.emit("changed", this.bookmarkList.itemsPagingHeight);
                         this.bookmarkList.itemsCounter = (this.bookmarkList.obj as any).model.calcCube.length;
                         this.timeout();
                     })
@@ -317,9 +314,9 @@ class BookmarkController implements ng.IController {
                 if (this.focusedPosition < this.bookmarkList.itemsPagingTop) {
                     this.bookmarkList.itemsPagingTop = this.focusedPosition;
                 } else if (this.focusedPosition >
-                    this.bookmarkList.itemsPagingTop + utils.calcNumbreOfVisRows(this.elementHeight)) {
+                    this.bookmarkList.itemsPagingTop + this.bookmarkList.itemsPagingHeight) {
                     this.bookmarkList.itemsPagingTop
-                        = this.focusedPosition - (utils.calcNumbreOfVisRows(this.elementHeight) + 1);
+                        = this.focusedPosition - (this.bookmarkList.itemsPagingHeight + 1);
                 }
 
                     domcontainer.element.children().children().children().children()[

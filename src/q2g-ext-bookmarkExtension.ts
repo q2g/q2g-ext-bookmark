@@ -136,6 +136,17 @@ export = {
     definition: parameter,
     initialProperties: { },
     template: template,
+    support: {
+        snapshot: false,
+        export: false,
+        exportData: false
+    },
+    paint: () => {
+        //
+    },
+    resize: () => {
+        //
+    },
     controller: ["$scope", function (scope: utils.IVMScope<BookmarkExtension>) {
         scope.vm = new BookmarkExtension(utils.getEnigma(scope));
     }]

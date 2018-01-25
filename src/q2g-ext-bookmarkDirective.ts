@@ -180,6 +180,7 @@ class BookmarkController implements ng.IController {
             if (v < 0) {
                 this.menuList[0].isEnabled = true;
                 this.menuList[2].isEnabled = true;
+                this.showSearchField = false;
             } else {
                 this.menuList[0].isEnabled = false;
                 this.menuList[2].isEnabled = false;
@@ -222,10 +223,11 @@ class BookmarkController implements ng.IController {
         $(document).on("click", (e: JQueryEventObject) => {
             try {
                 if (element.find(e.target).length === 0) {
+                    this.inputStates.relStateName = eStateName.searchBookmark;
                     this.showFocused = false;
                     this.showButtons = false;
                     this.showSearchField = false;
-                    this.headerInput= null;
+                    this.headerInput= "";
                     this.timeout();
                 }
             } catch (e) {
@@ -310,6 +312,8 @@ class BookmarkController implements ng.IController {
                     this.focusedPosition = 0;
                     domcontainer.element.children().children().children()[0].focus();
                     this.timeout();
+                    this.showSearchField = false;
+                    this.inputStates.relStateName = eStateName.searchBookmark;
                     return true;
                 }
 
@@ -320,10 +324,11 @@ class BookmarkController implements ng.IController {
                     this.bookmarkList.itemsPagingTop
                         = this.focusedPosition - (this.bookmarkList.itemsPagingHeight + 1);
                 }
-
-                    domcontainer.element.children().children().children().children()[
+                domcontainer.element.children().children().children().children()[
                     this.focusedPosition - this.bookmarkList.itemsPagingTop
                 ].focus();
+                this.showSearchField = false;
+                this.inputStates.relStateName = eStateName.searchBookmark;
                 return true;
             } catch (e) {
                 this.logger.error("Error in shortcut Handler", e);
@@ -534,7 +539,7 @@ class BookmarkController implements ng.IController {
             .catch((error) => {
                 this.logger.error("error during creation of Bookmark", error);
             });
-            this.headerInput = null;
+            this.headerInput = "";
         } catch (error) {
             this.logger.error("Error in setter of input Accept", error);
         }

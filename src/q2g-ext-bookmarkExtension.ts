@@ -2,7 +2,7 @@
 import * as qvangular from "qvangular";
 import * as qlik from "qlik";
 import * as template from "text!./q2g-ext-bookmarkExtension.html";
-import { utils, logging, services, version } from "../node_modules/davinci.js/dist/daVinci";
+import { utils, logging, services, version } from "../node_modules/davinci.js/dist/umd/daVinci";
 import { BookmarkDirectiveFactory, IShortcutProperties } from "./q2g-ext-bookmarkDirective";
 //#endregion
 
@@ -136,6 +136,17 @@ export = {
     definition: parameter,
     initialProperties: { },
     template: template,
+    support: {
+        snapshot: false,
+        export: false,
+        exportData: false
+    },
+    paint: () => {
+        //
+    },
+    resize: () => {
+        //
+    },
     controller: ["$scope", function (scope: utils.IVMScope<BookmarkExtension>) {
         scope.vm = new BookmarkExtension(utils.getEnigma(scope));
     }]

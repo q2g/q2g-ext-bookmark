@@ -5,13 +5,14 @@
      style="height:100%; width:100%">
 
      <div q2g-shortcut-scope
+          q2g-shortcut
           shortcut="[{name:'escList', shortcut:'27'}]"
           shortcut-action="vm.shortcutHandler(shortcutObject, domcontainer)">
           
         <div>
             <q2g-extension-header max-number-of-elements="5"
                                   reserved-button-width="0.5"
-                                  title="vm.titleDimension"                                  
+                                  title="vm.titleDimension"
                                   theme="vm.theme"
                                   
                                   input-accept="vm.extensionHeaderAccept()"
@@ -35,23 +36,24 @@
                 {name:'removeBookmark', shortcut:vm.properties.shortcutRemoveBookmark}
             ]"
              shortcut-action="vm.shortcutHandler(shortcutObject, domcontainer)">
-            <q2g-listview style="height: calc(100% - 90px);"
+            <q2g-listview ng-style="{'height': vm.elementHeight-42+'px'}"
                           tabindex="0"
+
                           items="vm.bookmarkList.collection"
                           items-count="vm.bookmarkList.itemsCounter"
                           items-page-top="vm.bookmarkList.itemsPagingTop"
-                          items-page-height="vm.bookmarkList.itemsPagingHeight"
+                          items-page-size="vm.bookmarkList.itemsPagingHeight"
                           item-height="31"
                           item-focused="vm.focusedPosition"
+
                           show-focused="vm.showFocused"
                           callback-listview-objects="vm.selectObjectCallback(pos)"
                           theme="vm.theme">
             </q2g-listview>
         </div>
-
     </div>
     
-    <q2g-identifier show="vm.isEditMode()">         
+    <q2g-identifier show="vm.isEditMode()">
     </q2g-identifier>
 
     <div ng-if="vm.isEditMode()"

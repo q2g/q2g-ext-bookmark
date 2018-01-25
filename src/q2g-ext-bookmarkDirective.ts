@@ -1,6 +1,8 @@
 //#region imports
-import { utils, logging, directives } from "../node_modules/davinci.js/dist/daVinci";
-import * as template from "text!./q2g-ext-bookmarkDirective.html";
+import { utils,
+         logging,
+         directives }           from "../node_modules/davinci.js/dist/umd/daVinci";
+import * as template            from "text!./q2g-ext-bookmarkDirective.html";
 //#endregion
 
 //#region interfaces
@@ -57,9 +59,6 @@ class BookmarkController implements ng.IController {
         if (this.elementHeight !== value) {
             try {
                 this._elementHeight = value;
-                if (this.bookmarkList && this.bookmarkList.obj) {
-                    this.bookmarkList.obj.emit("changed", utils.calcNumbreOfVisRows(this.elementHeight));
-                }
             } catch (err) {
                 this.logger.error("error in setter of elementHeight", err);
             }
@@ -103,8 +102,8 @@ class BookmarkController implements ng.IController {
                             let bookmarkObject = new utils.Q2gIndObject(
                                 new utils.AssistHyperCubeBookmarks(bookmarkLayout));
 
-                            that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject, utils.calcNumbreOfVisRows(that.elementHeight),
-                                bookmarkLayout.qBookmarkList.qItems.length, "bookmark");
+                            that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject,
+                                bookmarkLayout.qBookmarkList.qItems.length, 0, "bookmark");
                         })
                         .catch((error) => {
                             this.logger.error("Error in on change of bookmark object", error);
@@ -150,7 +149,7 @@ class BookmarkController implements ng.IController {
                 if (!(this.inputStates.relStateName === eStateName.addBookmark)) {
                     this.bookmarkList.obj.searchFor(!v? "": v)
                     .then(() => {
-                        this.bookmarkList.obj.emit("changed", utils.calcNumbreOfVisRows(this.elementHeight));
+                        this.bookmarkList.obj.emit("changed", this.bookmarkList.itemsPagingHeight);
                         this.bookmarkList.itemsCounter = (this.bookmarkList.obj as any).model.calcCube.length;
                         this.timeout();
                     })
@@ -181,6 +180,7 @@ class BookmarkController implements ng.IController {
             if (v < 0) {
                 this.menuList[0].isEnabled = true;
                 this.menuList[2].isEnabled = true;
+                this.showSearchField = false;
             } else {
                 this.menuList[0].isEnabled = false;
                 this.menuList[2].isEnabled = false;
@@ -223,10 +223,11 @@ class BookmarkController implements ng.IController {
         $(document).on("click", (e: JQueryEventObject) => {
             try {
                 if (element.find(e.target).length === 0) {
+                    this.inputStates.relStateName = eStateName.searchBookmark;
                     this.showFocused = false;
                     this.showButtons = false;
                     this.showSearchField = false;
-                    this.headerInput= null;
+                    this.headerInput= "";
                     this.timeout();
                 }
             } catch (e) {
@@ -311,20 +312,23 @@ class BookmarkController implements ng.IController {
                     this.focusedPosition = 0;
                     domcontainer.element.children().children().children()[0].focus();
                     this.timeout();
+                    this.showSearchField = false;
+                    this.inputStates.relStateName = eStateName.searchBookmark;
                     return true;
                 }
 
                 if (this.focusedPosition < this.bookmarkList.itemsPagingTop) {
                     this.bookmarkList.itemsPagingTop = this.focusedPosition;
                 } else if (this.focusedPosition >
-                    this.bookmarkList.itemsPagingTop + utils.calcNumbreOfVisRows(this.elementHeight)) {
+                    this.bookmarkList.itemsPagingTop + this.bookmarkList.itemsPagingHeight) {
                     this.bookmarkList.itemsPagingTop
-                        = this.focusedPosition - (utils.calcNumbreOfVisRows(this.elementHeight) + 1);
+                        = this.focusedPosition - (this.bookmarkList.itemsPagingHeight + 1);
                 }
-
-                    domcontainer.element.children().children().children().children()[
+                domcontainer.element.children().children().children().children()[
                     this.focusedPosition - this.bookmarkList.itemsPagingTop
                 ].focus();
+                this.showSearchField = false;
+                this.inputStates.relStateName = eStateName.searchBookmark;
                 return true;
             } catch (e) {
                 this.logger.error("Error in shortcut Handler", e);
@@ -535,7 +539,7 @@ class BookmarkController implements ng.IController {
             .catch((error) => {
                 this.logger.error("error during creation of Bookmark", error);
             });
-            this.headerInput = null;
+            this.headerInput = "";
         } catch (error) {
             this.logger.error("Error in setter of input Accept", error);
         }

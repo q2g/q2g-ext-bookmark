@@ -1,6 +1,8 @@
 //#region imports
-import { utils, logging, directives } from "../node_modules/davinci.js/dist/umd/daVinci";
-import * as template from "text!./q2g-ext-bookmarkDirective.html";
+import { utils,
+         logging,
+         directives }           from "../node_modules/davinci.js/dist/umd/daVinci";
+import * as template            from "text!./q2g-ext-bookmarkDirective.html";
 //#endregion
 
 //#region interfaces

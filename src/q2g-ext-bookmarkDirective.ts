@@ -305,35 +305,35 @@ class BookmarkController implements ng.IController {
 
             //#region focusList
             case "focusList":
-            try {
-                this.showFocused = true;
-                this.timeout();
-                if (this.focusedPosition < 0 || this.focusedPosition >= this.bookmarkList.collection.length) {
-                    this.focusedPosition = 0;
-                    domcontainer.element.children().children().children()[0].focus();
+                try {
+                    this.showFocused = true;
                     this.timeout();
+                    if (this.focusedPosition < 0 || this.focusedPosition >= this.bookmarkList.collection.length) {
+                        this.focusedPosition = 0;
+                        domcontainer.element.children().children().children()[0].focus();
+                        this.timeout();
+                        this.showSearchField = false;
+                        this.inputStates.relStateName = eStateName.searchBookmark;
+                        return true;
+                    }
+
+                    if (this.focusedPosition < this.bookmarkList.itemsPagingTop) {
+                        this.bookmarkList.itemsPagingTop = this.focusedPosition;
+                    } else if (this.focusedPosition >
+                        this.bookmarkList.itemsPagingTop + this.bookmarkList.itemsPagingHeight) {
+                        this.bookmarkList.itemsPagingTop
+                            = this.focusedPosition - (this.bookmarkList.itemsPagingHeight + 1);
+                    }
+                    domcontainer.element.children().children().children().children()[
+                        this.focusedPosition - this.bookmarkList.itemsPagingTop
+                    ].focus();
                     this.showSearchField = false;
                     this.inputStates.relStateName = eStateName.searchBookmark;
                     return true;
+                } catch (e) {
+                    this.logger.error("Error in shortcut Handler", e);
+                    return false;
                 }
-
-                if (this.focusedPosition < this.bookmarkList.itemsPagingTop) {
-                    this.bookmarkList.itemsPagingTop = this.focusedPosition;
-                } else if (this.focusedPosition >
-                    this.bookmarkList.itemsPagingTop + this.bookmarkList.itemsPagingHeight) {
-                    this.bookmarkList.itemsPagingTop
-                        = this.focusedPosition - (this.bookmarkList.itemsPagingHeight + 1);
-                }
-                domcontainer.element.children().children().children().children()[
-                    this.focusedPosition - this.bookmarkList.itemsPagingTop
-                ].focus();
-                this.showSearchField = false;
-                this.inputStates.relStateName = eStateName.searchBookmark;
-                return true;
-            } catch (e) {
-                this.logger.error("Error in shortcut Handler", e);
-                return false;
-            }
             //#endregion
 
             //#region escList

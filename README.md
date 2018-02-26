@@ -3,7 +3,19 @@
 [![TravisCI](https://travis-ci.org/q2g/q2g-ext-bookmark.svg?branch=master)](https://travis-ci.org/q2g/q2g-ext-bookmark)
 [![Downloads](https://m.sense2go.net/downloads.svg?q2g-ext-bookmark)](https://m.sense2go.net/extension-package)
 
-This extensions developed for blind users to handle bookmarks with full keyboard control and full JAWS support.
+This extension was developed, for blind users to handle bookmarks with full keyboard control and full JAWS support.
+
+## Intro
+
+![teaser](./docs/teaser.gif "Short teaser")
+
+## Settings
+
+### Options
+
+In the accessibillity options you can switch the use of shortcuts from the default values to customise shortcuts. The recommendation ist to use the combination of "strg + alt + {any keycode}", so that you do not get in truble with screenreaders shortcuts.
+
+![settings](./docs/screenshot_2.PNG?raw=true "Settings")
 
 ## Install
 

@@ -18,7 +18,7 @@ interface IDataProperties {
 //#endregion
 
 //#region Logger
-logging.LogConfig.SetLogLevel("*", logging.LogLevel.info);
+logging.LogConfig.SetLogLevel("*", logging.LogLevel.warn);
 let logger = new logging.Logger("Main");
 //#endregion
 
@@ -107,7 +107,14 @@ let parameter = {
                                 }
                                 return !data.properties.shortcutUseDefaults;
                             }
-                        },
+                        }
+                    }
+                },
+                configuration: {
+                    type: "items",
+                    label: "Configuration",
+                    grouped: true,
+                    items: {
                         bookmarkType: {
                             ref: "properties.bookmarkType",
                             label: "bookmark Type",
@@ -166,6 +173,15 @@ export = {
         //
     },
     resize: () => {
+        //
+    },
+    mounted: () => {
+        //
+    },
+    updateData: () => {
+        //
+    },
+    beforeDestroy: () => {
         //
     },
     controller: ["$scope", function (scope: utils.IVMScope<BookmarkExtension>) {

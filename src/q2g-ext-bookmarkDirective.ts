@@ -1,7 +1,7 @@
 //#region imports
 import { utils,
          logging,
-         directives }           from "../node_modules/davinci.js/dist/umd/daVinci";
+         directives }           from "./node_modules/davinci.js/dist/umd/daVinci";
 import * as template            from "text!./q2g-ext-bookmarkDirective.html";
 //#endregion
 
@@ -12,6 +12,8 @@ export interface IShortcutProperties {
     shortcutRemoveBookmark: string;
     shortcutAddBookmark: string;
     shortcutUseDefaults: string;
+    bookmarkType: string;
+    useSheet: boolean;
 }
 //#endregion
 
@@ -31,6 +33,7 @@ class BookmarkController implements ng.IController {
     bookmarkList: utils.IQ2gListAdapter;
     editMode: boolean = false;
     element: JQuery;
+    sheetId: string;
     inputBarType: string = "search";
     menuList: Array<utils.IMenuElement>;
     properties: IShortcutProperties = {
@@ -38,7 +41,9 @@ class BookmarkController implements ng.IController {
         shortcutFocusSearchField: " ",
         shortcutRemoveBookmark: " ",
         shortcutAddBookmark: " ",
-        shortcutUseDefaults: " "
+        shortcutUseDefaults: " ",
+        bookmarkType: " ",
+        useSheet: true
     };
     showButtons: boolean = false;
     showFocused: boolean = true;
@@ -75,15 +80,14 @@ class BookmarkController implements ng.IController {
         if (value !== this._model) {
             try {
                 this._model = value;
-                let bmp = {
-                    "qInfo": { "qType": "BookmarkList" },
-                    "qBookmarkListDef": { "qType": "bookmark" }
-                };
+                console.log("#########", value);
+
                 this.registrateSelectionObject();
                 let that = this;
                 value.on("changed", function() {
                     value.getProperties()
                     .then((res) => {
+                        console.log("res", res);
                         that.setProperties(res.properties);
                     })
                     .catch((error) => {
@@ -91,30 +95,60 @@ class BookmarkController implements ng.IController {
                     });
                 });
 
-                this.model.app.createSessionObject(bmp)
-                .then((bookmarkObject: EngineAPI.IGenericObject) => {
-                    let that = this;
-                    bookmarkObject.on("changed", function () {
+                value.getProperties()
+                .then((res) => {
+                    console.log("res", res);
+                    that.setProperties(res.properties);
 
-                        this.getLayout()
-                        .then((bookmarkLayout: EngineAPI.IGenericBookmarkListLayout) => {
+                    let bmp = {
+                        "qInfo": { "qType": "BookmarkList" },
+                        "qBookmarkListDef": { "qType": this.properties?this.properties.bookmarkType:"bookmark"}
+                    };
+                    this.logger.info("lostProperties", bmp);
+                    this.model.app.createSessionObject(bmp)
+                    .then((bookmarkObject: EngineAPI.IGenericObject) => {
+                        let that = this;
+                        bookmarkObject.on("changed", function () {
 
-                            let bookmarkObject = new utils.Q2gIndObject(
-                                new utils.AssistHyperCubeBookmarks(bookmarkLayout));
+                            this.getLayout()
+                            .then((bookmarkLayout: EngineAPI.IGenericBookmarkListLayout) => {
 
-                            that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject,
-                                bookmarkLayout.qBookmarkList.qItems.length, 0, "bookmark");
-                        })
-                        .catch((error) => {
-                            this.logger.error("Error in on change of bookmark object", error);
+                                let bookmarkObject = new utils.Q2gIndObject(
+                                    new utils.AssistHyperCubeBookmarks(bookmarkLayout));
+                                    // console.log("bookmarkObject#####",bookmarkObject);
+                                    // console.log("bookmarkLayout#####",bookmarkLayout);
+
+                                    for (const i of bookmarkObject.model.calcCube) {
+
+                                        for (const i2 of bookmarkLayout.qBookmarkList.qItems) {
+                                            if (i.cId === i2.qInfo.qId) {
+
+                                                i.qFallbackTitle += `| ${(i2.qMeta as any).published}`;
+                                            }
+                                        }
+
+                                    }
+
+                                that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject,
+                                    bookmarkLayout.qBookmarkList.qItems.length, 0, "bookmark");
+
+                            })
+                            .catch((error) => {
+                                this.logger.error("Error in on change of bookmark object", error);
+                            });
                         });
+                        bookmarkObject.emit("changed");
+                    })
+                    .catch((error) => {
+                        this.logger.error("Error in setter of model", error);
                     });
-                    bookmarkObject.emit("changed");
+                    this.model.emit("changed");
+
                 })
                 .catch((error) => {
-                    this.logger.error("Error in setter of model", error);
+                    this.logger.error("ERROR in setter of model", error);
                 });
-                this.model.emit("changed");
+
             } catch (e) {
                 this.logger.error("error", e);
             }
@@ -217,6 +251,8 @@ class BookmarkController implements ng.IController {
         this.element = element;
         this.timeout = timeout;
 
+        this.getSheetId();
+
         this.initMenuElements();
         this.initInputStates();
 
@@ -293,6 +329,14 @@ class BookmarkController implements ng.IController {
 
             case "Confirm Selection":
                 this.applyButtonAction();
+                break;
+
+            case "publish Bookmark":
+                this.publishBookmark(this.bookmarkList.collection[this.focusedPosition].id[0] as string);
+                break;
+
+            case "unpublish Bookmark":
+                this.unpublishBookmark(this.bookmarkList.collection[this.focusedPosition].id[0] as string);
         }
     }
 
@@ -370,6 +414,26 @@ class BookmarkController implements ng.IController {
         return false;
     }
 
+    private publishBookmark(id: string) {
+        this.model.app.getBookmark(id)
+        .then((object) => {
+            object.publish();
+        })
+        .catch((error) => {
+            this.logger.error("Bookmark could not be unpublished");
+        });
+    }
+
+    private unpublishBookmark(id: string) {
+        this.model.app.getBookmark(id)
+        .then((object) => {
+            object.unPublish();
+        })
+        .catch((error) => {
+            this.logger.error("Bookmark could not be unpublished");
+        });
+    }
+
     /**
      * callback when enter on input field
      */
@@ -387,10 +451,15 @@ class BookmarkController implements ng.IController {
      */
     private setProperties(properties: IShortcutProperties): Promise<boolean> {
         return new Promise((resolve, reject) => {
+            console.log("properties", properties);
             this.properties.shortcutFocusBookmarkList = properties.shortcutFocusBookmarkList;
             this.properties.shortcutFocusSearchField = properties.shortcutFocusSearchField;
             this.properties.shortcutRemoveBookmark = properties.shortcutRemoveBookmark;
             this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+            this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+            this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+            this.properties.bookmarkType = properties.bookmarkType;
+            this.properties.useSheet = properties.useSheet;
             // if (properties.useAccessibility) {
             //     this.timeAriaIntervall = parseInt(properties.aria.timeAria, 10);
             //     this.actionDelay = parseInt(properties.aria.actionDelay, 10);
@@ -405,6 +474,45 @@ class BookmarkController implements ng.IController {
      */
     private removeBookmark(id: string) {
         this.model.app.destroyBookmark(id);
+    }
+
+    private getSheetId(): Promise<void> {
+        return new Promise((resolve, reject) => {
+
+            this.model.app.getAllInfos()
+            .then((allInfo) => {
+                let sheets: EngineAPI.INxInfo[] = [];
+                for (const info of allInfo) {
+                    if (info.qType === "sheet") {
+                        sheets.push(info);
+                    }
+                }
+                for (const sheet of sheets) {
+                    let sheetObject: EngineAPI.IGenericObject;
+                    this.model.app.getObject(sheet.qId)
+                    .then((res) => {
+                        sheetObject = res;
+                        return res.getFullPropertyTree();
+                    })
+                    .then((res) => {
+                        for (const iterator of res.qChildren) {
+                            if (iterator.qProperty.qInfo.qId === this.model.id) {
+                                this.sheetId = sheetObject.id;
+                            }
+                        }
+                        resolve();
+                    })
+                    .catch((error) => {
+                        Promise.reject(error);
+                    });
+                }
+            })
+            .catch((error) => {
+                this.logger.error("error in get sheet id", error);
+                this.sheetId = "default";
+                reject();
+            });
+        });
     }
 
     /**
@@ -458,6 +566,24 @@ class BookmarkController implements ng.IController {
             isEnabled: true,
             icon: "minus",
             name: "Remove Bookmark",
+            hasSeparator: false,
+            type: "menu"
+        });
+        this.menuList.push({
+            buttonType: "",
+            isVisible: true,
+            isEnabled: false,
+            icon: "plus",
+            name: "publish Bookmark",
+            hasSeparator: false,
+            type: "menu"
+        });
+        this.menuList.push({
+            buttonType: "",
+            isVisible: true,
+            isEnabled: false,
+            icon: "plus",
+            name: "unpublish Bookmark",
             hasSeparator: false,
             type: "menu"
         });
@@ -526,15 +652,22 @@ class BookmarkController implements ng.IController {
      */
     private addBookmark() {
         try {
-            let bookmarkProperties: EngineAPI.IGenericBookmarkProperties = {
+            let bookmarkProperties: EngineAPI.IGenericBookmarkProperties;
+
+            bookmarkProperties = {
                 "qMetaDef": {
                     "title": this.headerInput
                 },
                 "creationDate": (new Date()).toISOString(),
                 "qInfo": {
-                    "qType": "bookmark"
+                    "qType": this.properties.bookmarkType
                 }
             };
+            if (this.properties.useSheet) {
+                bookmarkProperties.sheetId =  this.sheetId;
+            }
+
+            this.logger.info("bookmark Properties", bookmarkProperties);
             this.model.app.createBookmark(bookmarkProperties)
             .catch((error) => {
                 this.logger.error("error during creation of Bookmark", error);

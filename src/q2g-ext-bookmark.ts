@@ -1,8 +1,8 @@
 //#region Imports
 import * as qvangular from "qvangular";
 import * as qlik from "qlik";
-import * as template from "text!./q2g-ext-bookmarkExtension.html";
-import { utils, logging, services, version } from "../node_modules/davinci.js/dist/umd/daVinci";
+import * as template from "text!./q2g-ext-bookmark.html";
+import { utils, logging, services, version } from "./node_modules/davinci.js/dist/umd/daVinci";
 import { BookmarkDirectiveFactory, IShortcutProperties } from "./q2g-ext-bookmarkDirective";
 //#endregion
 
@@ -65,6 +65,7 @@ let parameter = {
                             type: "string",
                             defaultValue: "strg + alt + 66",
                             show: function (data: IDataProperties) {
+                                console.log(data);
                                 if (data.properties.shortcutUseDefaults) {
                                     data.properties.shortcutFocusBookmarkList = "strg + alt + 66";
                                 }
@@ -106,6 +107,26 @@ let parameter = {
                                 }
                                 return !data.properties.shortcutUseDefaults;
                             }
+                        },
+                        bookmarkType: {
+                            ref: "properties.bookmarkType",
+                            label: "bookmark Type",
+                            type: "string",
+                            defaultValue: "bookmark"
+                        },
+                        useSheet: {
+                            ref: "properties.useSheet",
+                            label: "useSheet",
+                            component: "switch",
+                            type: "boolean",
+                            options: [{
+                                value: true,
+                                label: "use"
+                            }, {
+                                value: false,
+                                label: "not use"
+                            }],
+                            defaultValue: true
                         }
                     }
                 }

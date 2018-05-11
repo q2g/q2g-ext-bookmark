@@ -15,7 +15,7 @@ This extension was developed, for blind users to handle bookmarks with full keyb
 
 In the accessibillity options you can switch the use of shortcuts from the default values to customise shortcuts. The recommendation ist to use the combination of "strg + alt + {any keycode}", so that you do not get in truble with screenreaders shortcuts.
 
-![](./docs/screenshot_2.png?raw=true)
+![settings](./docs/screenshot_2.PNG?raw=true "Settings")
 
 ## Install
 

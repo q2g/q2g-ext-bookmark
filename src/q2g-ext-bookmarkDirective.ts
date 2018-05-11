@@ -274,8 +274,6 @@ class BookmarkController implements ng.IController {
         }, () => {
             this.elementHeight = this.element.height();
         });
-
-        this.logger.info("############", this);
     }
 
     //#region public functions

@@ -18,7 +18,7 @@ interface IDataProperties {
 //#endregion
 
 //#region Logger
-logging.LogConfig.SetLogLevel("*", logging.LogLevel.warn);
+logging.LogConfig.SetLogLevel("*", logging.LogLevel.info);
 let logger = new logging.Logger("Main");
 //#endregion
 
@@ -175,15 +175,15 @@ export = {
     resize: () => {
         //
     },
-    mounted: () => {
-        //
-    },
-    updateData: () => {
-        //
-    },
-    beforeDestroy: () => {
-        //
-    },
+    // mounted: () => {
+    //     //
+    // },
+    // updateData: () => {
+    //     //
+    // },
+    // beforeDestroy: () => {
+    //     //
+    // },
     controller: ["$scope", function (scope: utils.IVMScope<BookmarkExtension>) {
         scope.vm = new BookmarkExtension(utils.getEnigma(scope));
     }]

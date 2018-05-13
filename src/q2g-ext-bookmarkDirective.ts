@@ -1,7 +1,7 @@
 //#region imports
 import { utils,
          logging,
-         directives }           from "../node_modules/davinci.js/dist/umd/daVinci";
+         directives }           from "./node_modules/davinci.js/dist/umd/daVinci";
 import * as template            from "text!./q2g-ext-bookmarkDirective.html";
 //#endregion
 
@@ -12,42 +12,46 @@ export interface IShortcutProperties {
     shortcutRemoveBookmark: string;
     shortcutAddBookmark: string;
     shortcutUseDefaults: string;
+    bookmarkType: string;
+    useSheet: boolean;
 }
 //#endregion
 
+//#region enums
 enum eStateName {
     addBookmark,
     searchBookmark
 }
+//#endregion
 
 class BookmarkController implements ng.IController {
 
-    $onInit(): void {
-        this.logger.debug("initialisation from BookmarkController");
-    }
-
     //#region Variables
     actionDelay: number = 0;
+    appIsPublic: boolean = false;
     bookmarkList: utils.IQ2gListAdapter;
     editMode: boolean = false;
     element: JQuery;
+    inputBarFocus: boolean = false;
     inputBarType: string = "search";
+    inputStates = new utils.StateMachineInput<eStateName>();
     menuList: Array<utils.IMenuElement>;
     properties: IShortcutProperties = {
         shortcutFocusBookmarkList: " ",
         shortcutFocusSearchField: " ",
         shortcutRemoveBookmark: " ",
         shortcutAddBookmark: " ",
-        shortcutUseDefaults: " "
+        shortcutUseDefaults: " ",
+        bookmarkType: " ",
+        useSheet: true
     };
+    selectBookmarkToggle: boolean = true;
+    sheetId: string;
     showButtons: boolean = false;
     showFocused: boolean = true;
     showSearchField: boolean = false;
     timeout: ng.ITimeoutService;
     titleDimension: string = "Bookmarks";
-    selectBookmarkToggle: boolean = true;
-    inputStates = new utils.StateMachineInput<eStateName>();
-    inputBarFocus: boolean = false;
     //#endregion
 
     //#region elementHeight
@@ -75,48 +79,26 @@ class BookmarkController implements ng.IController {
         if (value !== this._model) {
             try {
                 this._model = value;
-                let bmp = {
-                    "qInfo": { "qType": "BookmarkList" },
-                    "qBookmarkListDef": { "qType": "bookmark" }
-                };
+
                 this.registrateSelectionObject();
                 let that = this;
                 value.on("changed", function() {
+                    that.logger.info("CHANGE from model called");
                     value.getProperties()
                     .then((res) => {
-                        that.setProperties(res.properties);
+                        return that.setProperties(res.properties);
+                    })
+                    .then(() => {
+                        that.createBookmarkListSessionObject();
                     })
                     .catch((error) => {
                         this.logger.error("ERROR in setter of model", error);
                     });
                 });
+                value.emit("changed");
 
-                this.model.app.createSessionObject(bmp)
-                .then((bookmarkObject: EngineAPI.IGenericObject) => {
-                    let that = this;
-                    bookmarkObject.on("changed", function () {
-
-                        this.getLayout()
-                        .then((bookmarkLayout: EngineAPI.IGenericBookmarkListLayout) => {
-
-                            let bookmarkObject = new utils.Q2gIndObject(
-                                new utils.AssistHyperCubeBookmarks(bookmarkLayout));
-
-                            that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject,
-                                bookmarkLayout.qBookmarkList.qItems.length, 0, "bookmark");
-                        })
-                        .catch((error) => {
-                            this.logger.error("Error in on change of bookmark object", error);
-                        });
-                    });
-                    bookmarkObject.emit("changed");
-                })
-                .catch((error) => {
-                    this.logger.error("Error in setter of model", error);
-                });
-                this.model.emit("changed");
-            } catch (e) {
-                this.logger.error("error", e);
+            } catch (error) {
+                this.logger.error("ERROR in setter of model", error);
             }
         }
     }
@@ -175,19 +157,49 @@ class BookmarkController implements ng.IController {
         return this._focusedPosition;
     }
     public set focusedPosition(v : number) {
-        if (!v || v !== this._focusedPosition) {
+        if (typeof(v) !== "undefined") {
             this._focusedPosition = v;
             if (v < 0) {
                 this.menuList[0].isEnabled = true;
-                this.menuList[2].isEnabled = true;
                 this.showSearchField = false;
+                this.menuList = JSON.parse(JSON.stringify(this.menuList));
             } else {
-                this.menuList[0].isEnabled = false;
-                this.menuList[2].isEnabled = false;
 
+                this.model.app.getBookmark(this.bookmarkList.collection[v].id[0])
+                .then((bookmark) => {
+                    return bookmark.getLayout();
+                })
+                .then((info) => {
+                    this.menuList[0].isEnabled = false;
+                    this.menuList[2].isEnabled = true;
+                    this.menuList[3].isEnabled = true;
+                    this.menuList[4].isEnabled = true;
+
+                    if(!this.appIsPublic) {
+                        this.menuList[2].isEnabled = false;
+                        this.menuList = JSON.parse(JSON.stringify(this.menuList));
+                        return;
+                    }
+
+                    if(((info.qMeta as any).privileges as string[]).indexOf("delete") !== -1) {
+                        this.menuList[2].isEnabled = false;
+                    }
+
+                    let hasPubishPriv = ((info.qMeta as any).privileges as string[]).indexOf("publish") !== -1;
+
+                    if ((info.qMeta as any).published && hasPubishPriv && this.appIsPublic) {
+                        this.menuList[3].isEnabled = true;
+                        this.menuList[4].isEnabled = false;
+                    } else if (!(info.qMeta as any).published && hasPubishPriv && this.appIsPublic) {
+                        this.menuList[3].isEnabled = false;
+                        this.menuList[4].isEnabled = true;
+                    }
+                    this.menuList = JSON.parse(JSON.stringify(this.menuList));
+                })
+                .catch((error) => {
+                    this.logger.error("Error while setting active to menu elements", error);
+                });
             }
-
-            this.menuList = JSON.parse(JSON.stringify(this.menuList));
         }
     }
     //#endregion
@@ -206,6 +218,10 @@ class BookmarkController implements ng.IController {
     }
     //#endregion
 
+    $onInit(): void {
+        this.logger.debug("initialisation from BookmarkController");
+    }
+
     static $inject = ["$timeout", "$element", "$scope"];
 
     /**
@@ -220,9 +236,27 @@ class BookmarkController implements ng.IController {
         this.initMenuElements();
         this.initInputStates();
 
+        this.checkIfAppIsPublicOrDesktop()
+        .then((result) => {
+            this.appIsPublic = result;
+        })
+        .catch((error) => {
+            this.logger.error("Error in checkIfAppIsPublicOrDesktop", error);
+        });
+
+        this.getSheetId()
+        .then((sheetId) => {
+            this.sheetId = sheetId;
+        })
+        .catch((error) => {
+            this.sheetId = null;
+            this.logger.error("ERROR in ", error);
+        });
+
         $(document).on("click", (e: JQueryEventObject) => {
             try {
                 if (element.find(e.target).length === 0) {
+                    this.toggleActivOfMenuItems(false);
                     this.inputStates.relStateName = eStateName.searchBookmark;
                     this.showFocused = false;
                     this.showButtons = false;
@@ -242,6 +276,7 @@ class BookmarkController implements ng.IController {
         });
     }
 
+    //#region public functions
     /**
      * checks if the extension is used in Edit mode
      */
@@ -258,7 +293,10 @@ class BookmarkController implements ng.IController {
      * @param pos position from the selected value
      */
     selectObjectCallback(pos: number): void {
+        this.logger.info("fcn called: selectObjectCallback");
+
         setTimeout(() => {
+
             this.selectBookmarkToggle = true;
             this.showFocused = true;
             this.showButtons = true;
@@ -293,7 +331,18 @@ class BookmarkController implements ng.IController {
 
             case "Confirm Selection":
                 this.applyButtonAction();
+                break;
+
+            case "publish Bookmark":
+                this.publishBookmark(this.bookmarkList.collection[this.focusedPosition].id[0] as string);
+                break;
+
+            case "unpublish Bookmark":
+                this.unpublishBookmark(this.bookmarkList.collection[this.focusedPosition].id[0] as string);
+                break;
         }
+        this.showButtons = false;
+        this.toggleActivOfMenuItems(false);
     }
 
     /**
@@ -380,36 +429,95 @@ class BookmarkController implements ng.IController {
                 break;
         }
     }
+    //#endregion
+
+    //#region private functions
 
     /**
-     * saves the Properties from the getLayout call from qlik enine in own Object
-     * @param properties Properties from getLayout call
+     * setProperties: sets the properies from the model object
+     * @param properties properties from the propertie panel from the model object
      */
-    private setProperties(properties: IShortcutProperties): Promise<boolean> {
+    private setProperties(properties: IShortcutProperties): Promise<void> {
+        this.logger.info("fcn called: setProperties", properties);
+
         return new Promise((resolve, reject) => {
-            this.properties.shortcutFocusBookmarkList = properties.shortcutFocusBookmarkList;
-            this.properties.shortcutFocusSearchField = properties.shortcutFocusSearchField;
-            this.properties.shortcutRemoveBookmark = properties.shortcutRemoveBookmark;
-            this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
-            // if (properties.useAccessibility) {
-            //     this.timeAriaIntervall = parseInt(properties.aria.timeAria, 10);
-            //     this.actionDelay = parseInt(properties.aria.actionDelay, 10);
-            // }
-            // this.useReadebility = properties.aria.useAccessibility;
+            try {
+                this.properties.shortcutFocusBookmarkList = properties.shortcutFocusBookmarkList;
+                this.properties.shortcutFocusSearchField = properties.shortcutFocusSearchField;
+                this.properties.shortcutRemoveBookmark = properties.shortcutRemoveBookmark;
+                this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+                this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+                this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+                this.properties.bookmarkType = properties.bookmarkType?properties.bookmarkType:"bookmark";
+                this.properties.useSheet = properties.useSheet;
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
     /**
-     * removes the bookmark from the app
-     * @param id the id of the bookmark
+     * toggleActivOfMenuItems: set the menu items to active or deactive
+     * @param toggle set the menu items to active or deactive
      */
+    private toggleActivOfMenuItems(toggle: boolean): void {
+        this.logger.info("fcn called: toggleActivOfMenuItems");
+        this.menuList[2].isEnabled = !toggle;
+        if (this.appIsPublic) {
+            this.menuList[3].isEnabled = !toggle;
+            this.menuList[4].isEnabled = !toggle;
+        }
+    }
+
     private removeBookmark(id: string) {
         this.model.app.destroyBookmark(id);
     }
 
     /**
-     * controlling the options set to create a bookmark in the header input
+     * getSheetId: returns the sheet ID of the current sheet
+     * @returns: Promise with the sheet ID in the resolve
      */
+    private getSheetId(): Promise<string> {
+        this.logger.info("fcn called: getSheetId");
+
+        return new Promise((resolve, reject) => {
+
+            this.model.app.getAllInfos()
+            .then((allInfo) => {
+                let sheets: EngineAPI.INxInfo[] = [];
+                for (const info of allInfo) {
+                    if (info.qType === "sheet") {
+                        sheets.push(info);
+                    }
+                }
+                for (const sheet of sheets) {
+                    let sheetObject: EngineAPI.IGenericObject;
+                    this.model.app.getObject(sheet.qId)
+                    .then((res) => {
+                        sheetObject = res;
+                        return res.getFullPropertyTree();
+                    })
+                    .then((res) => {
+                        let sheetId: string;
+                        for (const iterator of res.qChildren) {
+                            if (iterator.qProperty.qInfo.qId === this.model.id) {
+                                sheetId = sheetObject.id;
+                            }
+                        }
+                        resolve(sheetId);
+                    })
+                    .catch((error) => {
+                        Promise.reject(error);
+                    });
+                }
+            })
+            .catch((error) => {
+                reject(error);
+            });
+        });
+    }
+
     private controllingInputBarOptions(type:eStateName): void {
 
         switch (type) {
@@ -430,9 +538,10 @@ class BookmarkController implements ng.IController {
     }
 
     /**
-     * fills the Menu with Elements
+     * initMenuElements: creates the menu elements for the header bar
      */
     private initMenuElements(): void {
+        this.logger.info("fcn called: initMenuElements");
         this.menuList = [];
         this.menuList.push({
             buttonType: "success",
@@ -461,13 +570,30 @@ class BookmarkController implements ng.IController {
             hasSeparator: false,
             type: "menu"
         });
+        this.menuList.push({
+            buttonType: "",
+            isVisible: true,
+            isEnabled: true,
+            icon: "triangle-top",
+            name: "publish Bookmark",
+            hasSeparator: false,
+            type: "menu"
+        });
+        this.menuList.push({
+            buttonType: "",
+            isVisible: true,
+            isEnabled: true,
+            icon: "triangle-bottom",
+            name: "unpublish Bookmark",
+            hasSeparator: false,
+            type: "menu"
+        });
 
     }
 
-    /**
-     * registrate the selection object to handle change on selections
-     */
     private registrateSelectionObject(): Promise<boolean> {
+        this.logger.info("fcn call: registrateSelectionObject");
+
         return new Promise((resolve, reject) => {
 
             let params: EngineAPI.IGenericObjectProperties = {
@@ -505,9 +631,10 @@ class BookmarkController implements ng.IController {
     }
 
     /**
-     * initialisation of the stats from the input Bar
+     * initInputStates: function to set the several states of the input field
      */
     private initInputStates(): void {
+        this.logger.info("fcn called: initInputStates");
 
         let addBookmarkState: utils.IStateMachineState<eStateName> = {
             name: eStateName.addBookmark,
@@ -521,20 +648,24 @@ class BookmarkController implements ng.IController {
         this.inputStates.relStateName = null;
     }
 
-    /**
-     * creates a new bookmark
-     */
     private addBookmark() {
         try {
-            let bookmarkProperties: EngineAPI.IGenericBookmarkProperties = {
+            let bookmarkProperties: EngineAPI.IGenericBookmarkProperties;
+
+            bookmarkProperties = {
                 "qMetaDef": {
                     "title": this.headerInput
                 },
                 "creationDate": (new Date()).toISOString(),
                 "qInfo": {
-                    "qType": "bookmark"
+                    "qType": this.properties.bookmarkType
                 }
             };
+            if (this.properties.useSheet && this.sheetId!==null) {
+                bookmarkProperties.sheetId =  this.sheetId;
+            }
+
+            this.logger.info("bookmark Properties", bookmarkProperties);
             this.model.app.createBookmark(bookmarkProperties)
             .catch((error) => {
                 this.logger.error("error during creation of Bookmark", error);
@@ -552,6 +683,97 @@ class BookmarkController implements ng.IController {
             this.selectObjectCallback(this.focusedPosition);
         }
     }
+
+    private publishBookmark(id: string) {
+        this.logger.info("fcn called: ", id);
+        this.model.app.getBookmark(id)
+        .then((object) => {
+            object.publish();
+        })
+        .catch((error) => {
+            this.logger.error("Bookmark could not be unpublished");
+        });
+    }
+
+    private unpublishBookmark(id: string) {
+        this.model.app.getBookmark(id)
+        .then((object) => {
+            object.unPublish();
+        })
+        .catch((error) => {
+            this.logger.error("Bookmark could not be unpublished");
+        });
+    }
+
+    private checkIfAppIsPublicOrDesktop(): Promise<boolean> {
+        this.logger.info("fcn called: checkIfAppIsPublicOrDesktop");
+
+        return new Promise((resolve, reject) => {
+            this.model.app.getAppProperties()
+            .then((props) => {
+                if (!(props as any).published) {
+                    resolve(false);
+                }
+                resolve(true);
+            })
+            .catch((error) => {
+                reject(error);
+            });
+        });
+    }
+
+    /**
+     * createBookmarkListSessionObject: creates the session object for the bookmak list
+     */
+    private createBookmarkListSessionObject(): void {
+        this.logger.info("fcn called: createBookmarkListSessionObject");
+
+        let bmp = {
+            "qInfo": {
+                qType: "BookmarkList"
+            },
+            "qBookmarkListDef": {
+                qType: this.properties.bookmarkType
+            }
+        };
+
+        this.logger.info("create session object with: ", bmp);
+        this.model.app.createSessionObject(bmp)
+        .then((bookmarkObject: EngineAPI.IGenericObject) => {
+            let that = this;
+            bookmarkObject.on("changed", function () {
+                that.logger.info("CHANGED from bookmark list");
+
+                this.getLayout()
+                .then((bookmarkLayout: EngineAPI.IGenericBookmarkListLayout) => {
+                    let bookmarkObject = new utils.Q2gIndObject(
+                        new utils.AssistHyperCubeBookmarks(bookmarkLayout));
+
+                    for (const i of bookmarkObject.model.calcCube) {
+                        for (const i2 of bookmarkLayout.qBookmarkList.qItems) {
+                            if (i.cId === i2.qInfo.qId) {
+                                i.qFallbackTitle += `${(i2.qMeta as any).published?
+                                    " | is published": ""}`;
+                            }
+                        }
+                    }
+
+                    that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject,
+                        bookmarkLayout.qBookmarkList.qItems.length, 0, "bookmark");
+
+                    that.bookmarkList.itemsCounter = bookmarkLayout.qBookmarkList.qItems.length;
+                })
+                .catch((error) => {
+                    this.logger.error("Error in on change of bookmark object", error);
+                });
+            });
+            bookmarkObject.emit("changed");
+        })
+        .catch((error) => {
+            this.logger.error("Error in setter of model", error);
+        });
+    }
+    //#endregion
 }
 
 export function BookmarkDirectiveFactory(rootNameSpace: string): ng.IDirectiveFactory {

@@ -1,8 +1,8 @@
 //#region Imports
 import * as qvangular from "qvangular";
 import * as qlik from "qlik";
-import * as template from "text!./q2g-ext-bookmarkExtension.html";
-import { utils, logging, services, version } from "../node_modules/davinci.js/dist/umd/daVinci";
+import * as template from "text!./q2g-ext-bookmark.html";
+import { utils, logging, services, version } from "./node_modules/davinci.js/dist/umd/daVinci";
 import { BookmarkDirectiveFactory, IShortcutProperties } from "./q2g-ext-bookmarkDirective";
 //#endregion
 
@@ -17,10 +17,7 @@ interface IDataProperties {
 }
 //#endregion
 
-//#region Logger
-logging.LogConfig.SetLogLevel("*", logging.LogLevel.info);
-let logger = new logging.Logger("Main");
-//#endregion
+
 
 //#region Directives
 var $injector = qvangular.$injector;
@@ -65,6 +62,7 @@ let parameter = {
                             type: "string",
                             defaultValue: "strg + alt + 66",
                             show: function (data: IDataProperties) {
+                                console.log(data);
                                 if (data.properties.shortcutUseDefaults) {
                                     data.properties.shortcutFocusBookmarkList = "strg + alt + 66";
                                 }
@@ -108,6 +106,61 @@ let parameter = {
                             }
                         }
                     }
+                },
+                configuration: {
+                    type: "items",
+                    label: "Configuration",
+                    grouped: true,
+                    items: {
+                        bookmarkType: {
+                            ref: "properties.bookmarkType",
+                            label: "bookmark Type",
+                            type: "string",
+                            defaultValue: "bookmark"
+                        },
+                        useSheet: {
+                            ref: "properties.useSheet",
+                            label: "useSheet",
+                            component: "switch",
+                            type: "boolean",
+                            options: [{
+                                value: true,
+                                label: "use"
+                            }, {
+                                value: false,
+                                label: "not use"
+                            }],
+                            defaultValue: true
+                        },
+                        loglevel: {
+                            ref: "properties.loglevel",
+                            label: "loglevel",
+                            component: "dropdown",
+                            options: [{
+                                value: 0,
+                                label: "trace"
+                            }, {
+                                value: 1,
+                                label: "debug"
+                            }, {
+                                value: 2,
+                                label: "info"
+                            }, {
+                                value: 3,
+                                label: "warn"
+                            }, {
+                                value: 4,
+                                label: "error"
+                            }, {
+                                value: 5,
+                                label: "fatal"
+                            }, {
+                                value: 6,
+                                label: "off"
+                            }],
+                            defaultValue: 0
+                        },
+                    }
                 }
             }
         }
@@ -147,8 +200,23 @@ export = {
     resize: () => {
         //
     },
+    // mounted: () => {
+    //     //
+    // },
+    // updateData: () => {
+    //     //
+    // },
+    // beforeDestroy: () => {
+    //     //
+    // },
     controller: ["$scope", function (scope: utils.IVMScope<BookmarkExtension>) {
         scope.vm = new BookmarkExtension(utils.getEnigma(scope));
+
+        //#region Logger
+        logging.LogConfig.SetLogLevel("*", (scope as any).layout.properties.loglevel);
+        let logger = new logging.Logger("Main");
+        //#endregion
+
     }]
 };
 

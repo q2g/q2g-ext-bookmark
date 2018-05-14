@@ -158,7 +158,7 @@ let parameter = {
                                 value: 6,
                                 label: "off"
                             }],
-                            defaultValue: 0
+                            defaultValue: 3
                         },
                     }
                 }

@@ -256,13 +256,7 @@ class BookmarkController implements ng.IController {
         $(document).on("click", (e: JQueryEventObject) => {
             try {
                 if (element.find(e.target).length === 0) {
-                    this.toggleActivOfMenuItems(false);
-                    this.inputStates.relStateName = eStateName.searchBookmark;
-                    this.showFocused = false;
-                    this.showButtons = false;
-                    this.showSearchField = false;
-                    this.headerInput= "";
-                    this.timeout();
+                    this.clearHeader();
                 }
             } catch (e) {
                 this.logger.error("Error in Constructor with click event", e);
@@ -432,6 +426,19 @@ class BookmarkController implements ng.IController {
     //#endregion
 
     //#region private functions
+
+    /**
+     * clearHeader: reset all necessary properties
+     */
+    private clearHeader() {
+        this.toggleActivOfMenuItems(false);
+        this.inputStates.relStateName = eStateName.searchBookmark;
+        this.showFocused = false;
+        this.showButtons = false;
+        this.showSearchField = false;
+        this.headerInput= "";
+        this.timeout();
+    }
 
     /**
      * setProperties: sets the properies from the model object
@@ -648,7 +655,10 @@ class BookmarkController implements ng.IController {
         this.inputStates.relStateName = null;
     }
 
-    private addBookmark() {
+    /**
+     * addBookmark: creats a bookmark on the applikation with the inserted name
+     */
+    private addBookmark(): void {
         try {
             let bookmarkProperties: EngineAPI.IGenericBookmarkProperties;
 
@@ -667,6 +677,9 @@ class BookmarkController implements ng.IController {
 
             this.logger.info("bookmark Properties", bookmarkProperties);
             this.model.app.createBookmark(bookmarkProperties)
+            .then(() => {
+                this.clearHeader();
+            })
             .catch((error) => {
                 this.logger.error("error during creation of Bookmark", error);
             });

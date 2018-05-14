@@ -1,4 +1,5 @@
 //#region Imports
+import "css!./q2g-ext-bookmark.css";
 import * as qvangular from "qvangular";
 import * as qlik from "qlik";
 import * as template from "text!./q2g-ext-bookmark.html";

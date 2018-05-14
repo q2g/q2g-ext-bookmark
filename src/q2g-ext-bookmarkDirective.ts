@@ -15,6 +15,13 @@ export interface IShortcutProperties {
     bookmarkType: string;
     useSheet: boolean;
 }
+
+interface IBookmarkPrivliges {
+    bookmarkId: string;
+    publish: boolean;
+    delete: boolean;
+    isPublic: boolean;
+}
 //#endregion
 
 //#region enums
@@ -36,6 +43,7 @@ class BookmarkController implements ng.IController {
     inputBarType: string = "search";
     inputStates = new utils.StateMachineInput<eStateName>();
     menuList: Array<utils.IMenuElement>;
+    privBookmarks: IBookmarkPrivliges[] = [];
     properties: IShortcutProperties = {
         shortcutFocusBookmarkList: " ",
         shortcutFocusSearchField: " ",
@@ -157,50 +165,38 @@ class BookmarkController implements ng.IController {
         return this._focusedPosition;
     }
     public set focusedPosition(v : number) {
-        if (typeof(v) !== "undefined") {
-            this._focusedPosition = v;
-            if (v < 0) {
-                this.menuList[0].isEnabled = true;
-                this.showSearchField = false;
+        this._focusedPosition = v;
+        if (v < 0) {
+            this.menuList[0].isEnabled = true;
+            this.showSearchField = false;
+        } else {
+
+            let bookPriv: IBookmarkPrivliges = this.privBookmarks[v];
+
+            if(!this.appIsPublic) {
+                this.menuList[2].isEnabled = false;
                 this.menuList = JSON.parse(JSON.stringify(this.menuList));
-            } else {
-
-                this.model.app.getBookmark(this.bookmarkList.collection[v].id[0])
-                .then((bookmark) => {
-                    return bookmark.getLayout();
-                })
-                .then((info) => {
-                    this.menuList[0].isEnabled = false;
-                    this.menuList[2].isEnabled = true;
-                    this.menuList[3].isEnabled = true;
-                    this.menuList[4].isEnabled = true;
-
-                    if(!this.appIsPublic) {
-                        this.menuList[2].isEnabled = false;
-                        this.menuList = JSON.parse(JSON.stringify(this.menuList));
-                        return;
-                    }
-
-                    if(((info.qMeta as any).privileges as string[]).indexOf("delete") !== -1) {
-                        this.menuList[2].isEnabled = false;
-                    }
-
-                    let hasPubishPriv = ((info.qMeta as any).privileges as string[]).indexOf("publish") !== -1;
-
-                    if ((info.qMeta as any).published && hasPubishPriv && this.appIsPublic) {
-                        this.menuList[3].isEnabled = true;
-                        this.menuList[4].isEnabled = false;
-                    } else if (!(info.qMeta as any).published && hasPubishPriv && this.appIsPublic) {
-                        this.menuList[3].isEnabled = false;
-                        this.menuList[4].isEnabled = true;
-                    }
-                    this.menuList = JSON.parse(JSON.stringify(this.menuList));
-                })
-                .catch((error) => {
-                    this.logger.error("Error while setting active to menu elements", error);
-                });
+                return;
             }
+
+            this.menuList[2].isEnabled = true;
+            this.menuList[3].isEnabled = true;
+            this.menuList[4].isEnabled = true;
+
+            if (bookPriv.delete) {
+                this.menuList[2].isEnabled = false;
+            }
+
+            if (!bookPriv.isPublic && bookPriv.publish) {
+                this.menuList[3].isEnabled = false;
+            }
+
+            if (bookPriv.isPublic && bookPriv.publish) {
+                this.menuList[4].isEnabled = false;
+            }
+            this.menuList[0].isEnabled = false;
         }
+        this.menuList = JSON.parse(JSON.stringify(this.menuList));
     }
     //#endregion
 
@@ -677,8 +673,25 @@ class BookmarkController implements ng.IController {
 
             this.logger.info("bookmark Properties", bookmarkProperties);
             this.model.app.createBookmark(bookmarkProperties)
-            .then(() => {
+            .then((object) => {
                 this.clearHeader();
+                setTimeout(() => {
+
+                    object.getLayout()
+                    .then((layout) => {
+                        for (let privBookmark of this.privBookmarks) {
+                            if (privBookmark.bookmarkId === layout.qInfo.qId) {
+                                privBookmark.delete = true;
+                                privBookmark.publish = true;
+                                privBookmark.isPublic = false;
+                            }
+                        }
+
+                    })
+                    .catch((error) => {
+                        this.logger.error("ERROR in addBookmark", error);
+                    });
+                }, 100);
             })
             .catch((error) => {
                 this.logger.error("error during creation of Bookmark", error);
@@ -762,9 +775,12 @@ class BookmarkController implements ng.IController {
                     let bookmarkObject = new utils.Q2gIndObject(
                         new utils.AssistHyperCubeBookmarks(bookmarkLayout));
 
+                    that.privBookmarks = [];
+
                     for (const i of bookmarkObject.model.calcCube) {
                         for (const i2 of bookmarkLayout.qBookmarkList.qItems) {
                             if (i.cId === i2.qInfo.qId) {
+                                that.privBookmarks.push(that.getPrivliges(i2));
                                 i.qFallbackTitle += `${(i2.qMeta as any).published?
                                     " | is published": ""}`;
                             }
@@ -773,6 +789,8 @@ class BookmarkController implements ng.IController {
 
                     that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject,
                         bookmarkLayout.qBookmarkList.qItems.length, 0, "bookmark");
+
+
 
                     that.bookmarkList.itemsCounter = bookmarkLayout.qBookmarkList.qItems.length;
                 })
@@ -785,6 +803,22 @@ class BookmarkController implements ng.IController {
         .catch((error) => {
             this.logger.error("Error in setter of model", error);
         });
+    }
+
+    private getPrivliges(bookmarkLayout: EngineAPI.IGenericBaseLayout): IBookmarkPrivliges {
+        let priv: IBookmarkPrivliges = {
+            bookmarkId: bookmarkLayout.qInfo.qId,
+            delete: false,
+            publish: false,
+            isPublic: false,
+        };
+
+        if ((bookmarkLayout.qMeta as any).privileges) {
+            priv.delete = (bookmarkLayout.qMeta as any).privileges.indexOf("delete")!==-1?true:false;
+            priv.publish = (bookmarkLayout.qMeta as any).privileges.indexOf("publish")!==-1?true:false;
+            priv.isPublic = (bookmarkLayout.qMeta as any).published;
+        }
+        return priv;
     }
     //#endregion
 }

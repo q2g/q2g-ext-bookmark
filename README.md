@@ -3,12 +3,13 @@
 [![Downloads](https://m.sense2go.net/downloads.svg?q2g-ext-bookmark)](https://m.sense2go.net/extension-package)
 
 This extension was developed, for blind users to handle bookmarks with full keyboard control and full JAWS support.
+Now we add more and more features like publishing of bookmarks, so that it get more interested for everybody.
 
 ## Intro
 
 ![teaser](./docs/teaser.gif "Short teaser")
 
-![bookmarkpublish](./docs/bookmark_publish.gif "Publush Bookmarks")
+![bookmark_publish](./docs/bookmark_publish.gif "Publish Bookmarks")
 
 ## Settings
 

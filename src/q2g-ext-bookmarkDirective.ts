@@ -294,10 +294,19 @@ class BookmarkController implements ng.IController {
             this.model.app.applyBookmark(this.bookmarkList.collection[pos].id[0] as string)
             .then(() => {
                 this.focusedPosition = pos + this.bookmarkList.itemsPagingTop;
+                let statSave = this.bookmarkList.collection[pos].status;
                 for (let x of this.bookmarkList.collection) {
-                    x.status = "A";
+                    if(x.status.indexOf("P")!==-1) {
+                        x.status = "AP";
+                    } else {
+                        x.status = "A";
+                    }
                 }
-                this.bookmarkList.collection[pos].status = "S";
+                if (statSave.indexOf("P")!==-1) {
+                    this.bookmarkList.collection[pos].status = "SP";
+                } else {
+                    this.bookmarkList.collection[pos].status = "S";
+                }
             })
             .catch((error) => {
                 this.logger.error("ERROR in selectListObjectCallback", error);
@@ -779,8 +788,9 @@ class BookmarkController implements ng.IController {
                         for (const i2 of bookmarkLayout.qBookmarkList.qItems) {
                             if (i.cId === i2.qInfo.qId) {
                                 that.privBookmarks.push(that.getPrivliges(i2));
-                                i.qFallbackTitle += `${(i2.qMeta as any).published?
-                                    " | is published": ""}`;
+                                if ((i2.qMeta as any).published) {
+                                    i.qState = "P";
+                                }
                             }
                         }
                     }

@@ -686,7 +686,6 @@ class BookmarkController implements ng.IController {
                                 privBookmark.isPublic = false;
                             }
                         }
-
                     })
                     .catch((error) => {
                         this.logger.error("ERROR in addBookmark", error);
@@ -776,7 +775,6 @@ class BookmarkController implements ng.IController {
                         new utils.AssistHyperCubeBookmarks(bookmarkLayout));
 
                     that.privBookmarks = [];
-
                     for (const i of bookmarkObject.model.calcCube) {
                         for (const i2 of bookmarkLayout.qBookmarkList.qItems) {
                             if (i.cId === i2.qInfo.qId) {
@@ -789,8 +787,6 @@ class BookmarkController implements ng.IController {
 
                     that.bookmarkList = new utils.Q2gListAdapter(bookmarkObject,
                         bookmarkLayout.qBookmarkList.qItems.length, 0, "bookmark");
-
-
 
                     that.bookmarkList.itemsCounter = bookmarkLayout.qBookmarkList.qItems.length;
                 })

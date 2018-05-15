@@ -1,5 +1,4 @@
 # Bookmark Extension
-[![Greenkeeper badge](https://badges.greenkeeper.io/q2g/q2g-ext-bookmark.svg)](https://greenkeeper.io/)
 [![TravisCI](https://travis-ci.org/q2g/q2g-ext-bookmark.svg?branch=master)](https://travis-ci.org/q2g/q2g-ext-bookmark)
 [![Downloads](https://m.sense2go.net/downloads.svg?q2g-ext-bookmark)](https://m.sense2go.net/extension-package)
 
@@ -8,6 +7,8 @@ This extension was developed, for blind users to handle bookmarks with full keyb
 ## Intro
 
 ![teaser](./docs/teaser.gif "Short teaser")
+
+![bookmarkpublish](./docs/bookmark_publish.gif "Publush Bookmarks")
 
 ## Settings
 

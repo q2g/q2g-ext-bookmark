@@ -31,6 +31,79 @@ let parameter = {
     type: "items",
     component: "accordion",
     items: {
+        sorting: {
+            component: "items",
+            label: "Sorting",
+            grouped: true,
+            items: {
+                sortmode: {
+                    ref: "properties.sortmode",
+                    label: "Sorting",
+                    component: "switch",
+                    type: "boolean",
+                    options: [{
+                        value: false,
+                        label: "individual"
+                    }, {
+                        value: true,
+                        label: "automatic"
+                    }],
+                    defaultValue: true
+                },
+                byAscii: {
+                    component: "items",
+                    grouped: false,
+                    items: {
+                        byAscii: {
+                            ref: "properties.byAscii",
+                            label: "sort by Ascii",
+                            type: "boolean",
+                            defaultValue: false
+                        },
+                        byAsciiOrder: {
+                            ref: "properties.byAsciiOrder",
+                            component: "dropdown",
+                            type: "string",
+                            options: [{
+                                value: "a",
+                                label: "ascending"
+                            }, {
+                                value: "d",
+                                label: "descending"
+                            }],
+                            defaultValue: "a",
+                            show: function (data: IDataProperties) {
+                                return data.properties.byAscii;
+                            }
+                        }
+                    },
+                    show: function (data: IDataProperties) {
+                        if (data.properties.sortmode) {
+                            data.properties.byAscii = true;
+                        }
+                        return !data.properties.sortmode;
+                    }
+                },
+                byLoadOrder: {
+                    component: "items",
+                    grouped: false,
+                    items: {
+                        byLoadOrder: {
+                            ref: "properties.byLoadOrder",
+                            label: "sort by Load Order",
+                            type: "boolean",
+                            defaultValue: true
+                        }
+                    },
+                    show: function (data: IDataProperties) {
+                        if (data.properties.sortmode) {
+                            data.properties.byLoadOrder = false;
+                        }
+                        return !data.properties.sortmode;
+                    }
+                },
+            }
+        },
         settings: {
             uses: "settings",
             items: {
@@ -145,19 +218,6 @@ let parameter = {
                                 label: "dont show"
                             }],
                             defaultValue: true
-                        },
-                        sortOrder: {
-                            ref: "properties.sortOrder",
-                            label: "Sortorder",
-                            component: "dropdown",
-                            options: [{
-                                value: 0,
-                                label: "default (by date)"
-                            }, {
-                                value: 1,
-                                label: "alphabetically"
-                            }],
-                            defaultValue: 0
                         },
                         loglevel: {
                             ref: "properties.loglevel",

@@ -15,7 +15,10 @@ export interface IShortcutProperties {
     bookmarkType: string;
     showFocusedElement: boolean;
     useSheet: boolean;
-    sortOrder: number;
+    byAscii: boolean;
+    byAsciiOrder: string;
+    sortmode: boolean;
+    byLoadOrder: boolean;
 }
 
 interface IBookmarkPrivliges {
@@ -55,7 +58,10 @@ class BookmarkController implements ng.IController {
         bookmarkType: " ",
         showFocusedElement: true,
         useSheet: true,
-        sortOrder: 0
+        byAscii: false,
+        byLoadOrder: true,
+        sortmode: false,
+        byAsciiOrder: "a"
     };
     selectBookmarkToggle: boolean = true;
     sheetId: string;
@@ -470,7 +476,10 @@ class BookmarkController implements ng.IController {
                 this.properties.bookmarkType = properties.bookmarkType?properties.bookmarkType:"bookmark";
                 this.properties.useSheet = properties.useSheet;
                 this.properties.showFocusedElement = properties.showFocusedElement;
-                this.properties.sortOrder = properties.sortOrder;
+                this.properties.sortmode = properties.sortmode;
+                this.properties.byAscii = properties.byAscii;
+                this.properties.byLoadOrder = properties.byLoadOrder;
+                this.properties.byAsciiOrder = properties.byAsciiOrder;
                 resolve();
             } catch (error) {
                 reject(error);
@@ -792,15 +801,30 @@ class BookmarkController implements ng.IController {
                     let bookmarkObject = new utils.Q2gIndObject(
                         new utils.AssistHyperCubeBookmarks(bookmarkLayout));
 
-                    if (that.properties.sortOrder === 1) {
-                        bookmarkObject.model.calcCube.sort((a, b) => {
-                            if(a.qFallbackTitle.toLocaleLowerCase() < b.qFallbackTitle.toLocaleLowerCase()) {
-                                return -1;
-                            }
-                            if(a.qFallbackTitle.toLocaleLowerCase() > b.qFallbackTitle.toLocaleLowerCase()) {
-                                return 1;
-                            }
-                        });
+                    if (that.properties.byAscii) {
+                        switch (that.properties.byAsciiOrder) {
+                            case "a":
+                                bookmarkObject.model.calcCube.sort((a, b) => {
+                                    if(a.qFallbackTitle.toLocaleLowerCase() < b.qFallbackTitle.toLocaleLowerCase()) {
+                                        return -1;
+                                    }
+                                    if(a.qFallbackTitle.toLocaleLowerCase() > b.qFallbackTitle.toLocaleLowerCase()) {
+                                        return 1;
+                                    }
+                                });
+                                break;
+
+                            default:
+                                bookmarkObject.model.calcCube.sort((a, b) => {
+                                    if(a.qFallbackTitle.toLocaleLowerCase() < b.qFallbackTitle.toLocaleLowerCase()) {
+                                        return 1;
+                                    }
+                                    if(a.qFallbackTitle.toLocaleLowerCase() > b.qFallbackTitle.toLocaleLowerCase()) {
+                                        return -1;
+                                    }
+                                });
+                                break;
+                        }
                     }
 
                     that.privBookmarks = [];

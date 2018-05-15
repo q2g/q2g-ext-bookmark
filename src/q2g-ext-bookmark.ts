@@ -146,6 +146,19 @@ let parameter = {
                             }],
                             defaultValue: true
                         },
+                        sortOrder: {
+                            ref: "properties.sortOrder",
+                            label: "Sortorder",
+                            component: "dropdown",
+                            options: [{
+                                value: 0,
+                                label: "default (by date)"
+                            }, {
+                                value: 1,
+                                label: "alphabetically"
+                            }],
+                            defaultValue: 0
+                        },
                         loglevel: {
                             ref: "properties.loglevel",
                             label: "loglevel",

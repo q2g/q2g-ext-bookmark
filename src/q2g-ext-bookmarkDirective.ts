@@ -15,6 +15,7 @@ export interface IShortcutProperties {
     bookmarkType: string;
     showFocusedElement: boolean;
     useSheet: boolean;
+    sortOrder: number;
 }
 
 interface IBookmarkPrivliges {
@@ -53,7 +54,8 @@ class BookmarkController implements ng.IController {
         shortcutUseDefaults: " ",
         bookmarkType: " ",
         showFocusedElement: true,
-        useSheet: true
+        useSheet: true,
+        sortOrder: 0
     };
     selectBookmarkToggle: boolean = true;
     sheetId: string;
@@ -270,6 +272,7 @@ class BookmarkController implements ng.IController {
     }
 
     //#region public functions
+
     /**
      * checks if the extension is used in Edit mode
      */
@@ -467,6 +470,7 @@ class BookmarkController implements ng.IController {
                 this.properties.bookmarkType = properties.bookmarkType?properties.bookmarkType:"bookmark";
                 this.properties.useSheet = properties.useSheet;
                 this.properties.showFocusedElement = properties.showFocusedElement;
+                this.properties.sortOrder = properties.sortOrder;
                 resolve();
             } catch (error) {
                 reject(error);
@@ -787,6 +791,17 @@ class BookmarkController implements ng.IController {
                 .then((bookmarkLayout: EngineAPI.IGenericBookmarkListLayout) => {
                     let bookmarkObject = new utils.Q2gIndObject(
                         new utils.AssistHyperCubeBookmarks(bookmarkLayout));
+
+                    if (that.properties.sortOrder === 1) {
+                        bookmarkObject.model.calcCube.sort((a, b) => {
+                            if(a.qFallbackTitle.toLocaleLowerCase() < b.qFallbackTitle.toLocaleLowerCase()) {
+                                return -1;
+                            }
+                            if(a.qFallbackTitle.toLocaleLowerCase() > b.qFallbackTitle.toLocaleLowerCase()) {
+                                return 1;
+                            }
+                        });
+                    }
 
                     that.privBookmarks = [];
                     for (const i of bookmarkObject.model.calcCube) {

@@ -63,7 +63,6 @@ let parameter = {
                             type: "string",
                             defaultValue: "strg + alt + 66",
                             show: function (data: IDataProperties) {
-                                console.log(data);
                                 if (data.properties.shortcutUseDefaults) {
                                     data.properties.shortcutFocusBookmarkList = "strg + alt + 66";
                                 }
@@ -130,6 +129,20 @@ let parameter = {
                             }, {
                                 value: false,
                                 label: "not use"
+                            }],
+                            defaultValue: true
+                        },
+                        showFocusedElement: {
+                            ref: "properties.showFocusedElement",
+                            label: "show focused element",
+                            component: "switch",
+                            type: "boolean",
+                            options: [{
+                                value: true,
+                                label: "show"
+                            }, {
+                                value: false,
+                                label: "dont show"
                             }],
                             defaultValue: true
                         },

@@ -13,6 +13,7 @@ export interface IShortcutProperties {
     shortcutAddBookmark: string;
     shortcutUseDefaults: string;
     bookmarkType: string;
+    showFocusedElement: boolean;
     useSheet: boolean;
 }
 
@@ -51,12 +52,13 @@ class BookmarkController implements ng.IController {
         shortcutAddBookmark: " ",
         shortcutUseDefaults: " ",
         bookmarkType: " ",
+        showFocusedElement: true,
         useSheet: true
     };
     selectBookmarkToggle: boolean = true;
     sheetId: string;
     showButtons: boolean = false;
-    showFocused: boolean = true;
+    showFocused: boolean = false;
     showSearchField: boolean = false;
     timeout: ng.ITimeoutService;
     titleDimension: string = "Bookmarks";
@@ -165,6 +167,7 @@ class BookmarkController implements ng.IController {
         return this._focusedPosition;
     }
     public set focusedPosition(v : number) {
+        this.showFocused = this.properties.showFocusedElement?true:false;
         this._focusedPosition = v;
         if (v < 0) {
             this.menuList[0].isEnabled = true;
@@ -288,7 +291,7 @@ class BookmarkController implements ng.IController {
         setTimeout(() => {
 
             this.selectBookmarkToggle = true;
-            this.showFocused = true;
+            this.showFocused = this.properties.showFocusedElement?true:false;
             this.showButtons = true;
 
             this.model.app.applyBookmark(this.bookmarkList.collection[pos].id[0] as string)
@@ -341,6 +344,7 @@ class BookmarkController implements ng.IController {
                 break;
         }
         this.showButtons = false;
+        this.showFocused = false;
         this.toggleActivOfMenuItems(false);
     }
 
@@ -354,7 +358,7 @@ class BookmarkController implements ng.IController {
             //#region focusList
             case "focusList":
                 try {
-                    this.showFocused = true;
+                    this.showFocused = this.properties.showFocusedElement?true:false;
                     this.timeout();
                     if (this.focusedPosition < 0 || this.focusedPosition >= this.bookmarkList.collection.length) {
                         this.focusedPosition = 0;
@@ -462,6 +466,7 @@ class BookmarkController implements ng.IController {
                 this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
                 this.properties.bookmarkType = properties.bookmarkType?properties.bookmarkType:"bookmark";
                 this.properties.useSheet = properties.useSheet;
+                this.properties.showFocusedElement = properties.showFocusedElement;
                 resolve();
             } catch (error) {
                 reject(error);

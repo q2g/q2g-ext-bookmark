@@ -11,7 +11,7 @@
         <div>
             <q2g-extension-header max-number-of-elements="5"
                                   reserved-button-width="0.5"
-                                  title="vm.titleDimension"
+                                  title="vm.properties.titleDimension"
                                   theme="vm.theme"
                                   
                                   input-accept="vm.extensionHeaderAccept()"
@@ -32,7 +32,9 @@
                 {name:'focusList', shortcut:vm.properties.shortcutFocusBookmarkList, rootscope: '|global|'},
                 {name:'addBookmark', shortcut:vm.properties.shortcutAddBookmark},
                 {name:'searchBookmark', shortcut:vm.properties.shortcutFocusSearchField},
-                {name:'removeBookmark', shortcut:vm.properties.shortcutRemoveBookmark}
+                {name:'removeBookmark', shortcut:vm.properties.shortcutRemoveBookmark},
+                {name: 'applyBookmark', shortcut:'32'},
+                {name: 'applyBookmark', shortcut:'13'}
             ]"
              shortcut-action="vm.shortcutHandler(shortcutObject, domcontainer)">
             <q2g-listview ng-style="{'height': vm.elementHeight-42+'px'}"

@@ -185,6 +185,12 @@ let parameter = {
                     label: "Configuration",
                     grouped: true,
                     items: {
+                        titleDimension: {
+                            ref: "properties.titleDimension",
+                            label: "Title",
+                            type: "string",
+                            defaultValue: "Bookmark"
+                        },
                         bookmarkType: {
                             ref: "properties.bookmarkType",
                             label: "bookmark Type",

@@ -5,17 +5,37 @@
 
 This extension was developed, for blind users to handle bookmarks with full keyboard control and full JAWS support.
 
+In addition to that, it is now available to share your own bookmarks in a published Application with the other users. 
+
 ## Intro
 
 ![teaser](./docs/teaser.gif "Short teaser")
 
 ## Settings
 
-### Options
 
+### Sorting
+
+The default sort order of the bookmarks is by creation Date. You can change this to sort your Bookmarks alphabetically.
+
+![settings](./docs/screenshot_3.PNG?raw=true "Settings")
+
+### Appearance
+
+#### Accessibillity
 In the accessibillity options you can switch the use of shortcuts from the default values to customise shortcuts. The recommendation ist to use the combination of "strg + alt + {any keycode}", so that you do not get in truble with screenreaders shortcuts.
 
 ![settings](./docs/screenshot_2.PNG?raw=true "Settings")
+
+#### Configuration
+Shortcut                |  Description
+------------------------|--------------------------------------------
+title                   | enter a title to be shown in the extension
+bookmark type           | enter the type of the bookmark you want to show (default is bookmark)
+use sheet               | create the bookmark with using the sheet id in the configuration
+show focused elements   | mark the elements which have the focus with a black border
+loglevel                | define the log level to be used
+
 
 ## Install
 

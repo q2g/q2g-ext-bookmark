@@ -109,7 +109,7 @@ let parameter = {
             items: {
                 accessibility: {
                     type: "items",
-                    label: "accessibility",
+                    label: "Accessibility",
                     grouped: true,
                     items: {
                         ShortcutLable: {

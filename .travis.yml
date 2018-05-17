@@ -4,6 +4,8 @@ node_js:
   - 6
   - 5
 install:
+  - cd src
   - npm install --dev
 script:
-- npm test
+  - cd src
+  - npm test

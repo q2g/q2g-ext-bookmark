@@ -8,4 +8,4 @@ install:
   - npm install --dev
 script:
   - cd test
-  - npm test
+  - npm run test

@@ -46,5 +46,7 @@
     "build": "tsc -p tsconfig.json && gulp less",
     "build:dev": "cross-env NODE_ENV=dev webpack",
     "build:dev:watch": "cross-env NODE_ENV=dev webpack --watch --color --display-error-details"
+  },
+  "renovate-config": {
   }
 }

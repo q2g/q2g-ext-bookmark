@@ -1,4 +1,5 @@
 # Bookmark Extension
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5b3e407110e94693a25b21e05ab950a7)](https://app.codacy.com/app/konne/q2g-ext-bookmark?utm_source=github.com&utm_medium=referral&utm_content=q2g/q2g-ext-bookmark&utm_campaign=badger)
 [![TravisCI](https://travis-ci.org/q2g/q2g-ext-bookmark.svg?branch=master)](https://travis-ci.org/q2g/q2g-ext-bookmark)
 [![Downloads](https://m.sense2go.net/downloads.svg?q2g-ext-bookmark)](https://m.sense2go.net/extension-package)
 

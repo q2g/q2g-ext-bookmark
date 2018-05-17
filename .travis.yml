@@ -7,5 +7,5 @@ install:
   - cd src
   - npm install --dev
 script:
-  - cd src
+  - cd test
   - npm test

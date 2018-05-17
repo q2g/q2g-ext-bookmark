@@ -1,0 +1,13 @@
+{
+    "extends": [
+      "config:base",
+      ":automergeAll",
+      ":automergeBranchPush"
+    ],
+    "packageRules": [
+      {
+        "packagePatterns": ["tslint", "prettier"],
+        "groupName": "linters"
+      }
+    ]
+}

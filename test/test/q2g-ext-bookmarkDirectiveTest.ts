@@ -1,6 +1,6 @@
 import * as chai from "chai";
 
-let expect = chai.expect
+let expect = chai.expect;
 
 describe("tests the q2g-ext-listboxDirective.ts", () => {
     describe("tests the class CollectionAdapter", () => {

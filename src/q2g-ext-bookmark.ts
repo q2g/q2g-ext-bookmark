@@ -1,4 +1,5 @@
 //#region Imports
+import "css!./q2g-ext-bookmark.css";
 import * as qvangular from "qvangular";
 import * as qlik from "qlik";
 import * as template from "text!./q2g-ext-bookmark.html";
@@ -30,12 +31,85 @@ let parameter = {
     type: "items",
     component: "accordion",
     items: {
+        sorting: {
+            component: "items",
+            label: "Sorting",
+            grouped: true,
+            items: {
+                sortmode: {
+                    ref: "properties.sortmode",
+                    label: "Sorting",
+                    component: "switch",
+                    type: "boolean",
+                    options: [{
+                        value: false,
+                        label: "individual"
+                    }, {
+                        value: true,
+                        label: "automatic"
+                    }],
+                    defaultValue: true
+                },
+                byAscii: {
+                    component: "items",
+                    grouped: false,
+                    items: {
+                        byAscii: {
+                            ref: "properties.byAscii",
+                            label: "sort by Ascii",
+                            type: "boolean",
+                            defaultValue: false
+                        },
+                        byAsciiOrder: {
+                            ref: "properties.byAsciiOrder",
+                            component: "dropdown",
+                            type: "string",
+                            options: [{
+                                value: "a",
+                                label: "ascending"
+                            }, {
+                                value: "d",
+                                label: "descending"
+                            }],
+                            defaultValue: "a",
+                            show: function (data: IDataProperties) {
+                                return data.properties.byAscii;
+                            }
+                        }
+                    },
+                    show: function (data: IDataProperties) {
+                        if (data.properties.sortmode) {
+                            data.properties.byAscii = true;
+                        }
+                        return !data.properties.sortmode;
+                    }
+                },
+                byLoadOrder: {
+                    component: "items",
+                    grouped: false,
+                    items: {
+                        byLoadOrder: {
+                            ref: "properties.byLoadOrder",
+                            label: "sort by Load Order",
+                            type: "boolean",
+                            defaultValue: true
+                        }
+                    },
+                    show: function (data: IDataProperties) {
+                        if (data.properties.sortmode) {
+                            data.properties.byLoadOrder = false;
+                        }
+                        return !data.properties.sortmode;
+                    }
+                },
+            }
+        },
         settings: {
             uses: "settings",
             items: {
                 accessibility: {
                     type: "items",
-                    label: "accessibility",
+                    label: "Accessibility",
                     grouped: true,
                     items: {
                         ShortcutLable: {
@@ -62,7 +136,6 @@ let parameter = {
                             type: "string",
                             defaultValue: "strg + alt + 66",
                             show: function (data: IDataProperties) {
-                                console.log(data);
                                 if (data.properties.shortcutUseDefaults) {
                                     data.properties.shortcutFocusBookmarkList = "strg + alt + 66";
                                 }
@@ -112,6 +185,12 @@ let parameter = {
                     label: "Configuration",
                     grouped: true,
                     items: {
+                        titleDimension: {
+                            ref: "properties.titleDimension",
+                            label: "Title",
+                            type: "string",
+                            defaultValue: "Bookmark"
+                        },
                         bookmarkType: {
                             ref: "properties.bookmarkType",
                             label: "bookmark Type",
@@ -129,6 +208,20 @@ let parameter = {
                             }, {
                                 value: false,
                                 label: "not use"
+                            }],
+                            defaultValue: true
+                        },
+                        showFocusedElement: {
+                            ref: "properties.showFocusedElement",
+                            label: "show focused element",
+                            component: "switch",
+                            type: "boolean",
+                            options: [{
+                                value: true,
+                                label: "show"
+                            }, {
+                                value: false,
+                                label: "dont show"
                             }],
                             defaultValue: true
                         },
@@ -158,7 +251,7 @@ let parameter = {
                                 value: 6,
                                 label: "off"
                             }],
-                            defaultValue: 0
+                            defaultValue: 3
                         },
                     }
                 }

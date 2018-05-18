@@ -15,8 +15,9 @@
     "@types/qlik-visualizationextensions": "4.0.2",
     "gulp": "3.9.1",
     "gulp-less": "4.0.0",
-    "typescript": "2.8.3",
-    "autoprefixer": "8.5.0",
+    "gulp-clean": "0.4.0",
+    "typescript": "2.7.2",
+    "autoprefixer": "8.3.0",
     "clean-webpack-plugin": "0.1.19",
     "copy-webpack-plugin": "4.5.1",
     "cross-env": "5.1.5",
@@ -39,7 +40,7 @@
     "davinci.js": "1.4.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && gulp less",
+    "build": "tsc -p tsconfig.json && gulp less && gulp removePlaceholder",
     "build:dev": "cross-env NODE_ENV=dev webpack",
     "build:dev:watch": "cross-env NODE_ENV=dev webpack --watch --color --display-error-details"
   },

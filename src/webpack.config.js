@@ -11,41 +11,38 @@ const WebPackDeployAfterBuild = require("webpack-deploy-after-build");
 function CssLoaderReplacerPlugin(options) {
 }
 
-function checkCssInRoot() {
+function checkForCssInRoot(result) {
     if(result.request.indexOf("node_modules") === -1 && 
        result.request.indexOf("css!") > -1 &&
        result.context.indexOf("node_modules") === -1) {
-
         return true;
     }
-
     return false;
 }
 
-function checkCssInNodeModules() {
+function checkForCssInDavinci(result) {
     if(result.request.indexOf("node_modules") === -1 && 
        result.request.indexOf("css!") > -1 &&
-       result.context.indexOf("node_modules") === -1) {
-
+       result.context.indexOf("node_modules\\davinci.js") > -1) {
         return true;
     }
-
     return false;
 }
 
 function replaceLess(result, callback) {
 
-    if(checkCssInRoot()) {
+    if(checkForCssInRoot(result)) {
+
         result.request = result.request.replace("css!./", "./");
         result.request = result.request.replace(".css", ".less");
     }
 
-    if(checkCssInNodeModules) {
+    if(checkForCssInDavinci(result)) {
+
         result.request = result.request.replace("css!./", "./");
     }
-
     return callback();
-};
+}
 
 function cbLoadNMFPlugin(nmf) {
     nmf.plugin("before-resolve", replaceLess);

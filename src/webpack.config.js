@@ -11,20 +11,41 @@ const WebPackDeployAfterBuild = require("webpack-deploy-after-build");
 function CssLoaderReplacerPlugin(options) {
 }
 
+function checkCssInRoot() {
+    if(result.request.indexOf("node_modules") === -1 && 
+       result.request.indexOf("css!") > -1 &&
+       result.context.indexOf("node_modules") === -1) {
+
+        return true;
+    }
+
+    return false;
+}
+
+function checkCssInNodeModules() {
+    if(result.request.indexOf("node_modules") === -1 && 
+       result.request.indexOf("css!") > -1 &&
+       result.context.indexOf("node_modules") === -1) {
+
+        return true;
+    }
+
+    return false;
+}
+
 function replaceLess(result, callback) {
 
-    if(result.request.indexOf("node_modules") === -1 && 
-       result.request.indexOf("css!") > -1) {
-        if ((result.context.indexOf("node_modules") === -1)) {
-            result.request = result.request.replace("css!./", "./");
-            result.request = result.request.replace(".css", ".less");
-        } else if (result.context.indexOf("node_modules\\davinci.js") > -1) {
-            result.request = result.request.replace("css!./", "./");
-        }
+    if(checkCssInRoot()) {
+        result.request = result.request.replace("css!./", "./");
+        result.request = result.request.replace(".css", ".less");
+    }
+
+    if(checkCssInNodeModules) {
+        result.request = result.request.replace("css!./", "./");
     }
 
     return callback();
-}
+};
 
 function cbLoadNMFPlugin(nmf) {
     nmf.plugin("before-resolve", replaceLess);
@@ -88,11 +109,11 @@ let config = {
                     },
                 },
             ]},
-            { test: /\.eot(\?\S*)?$/, loader: "url-loader?limit=100000&mimetype=application/vnd.ms-fontobject" },
-            { test: /\.woff2(\?\S*)?$/, loader: "url-loader?limit=100000&mimetype=application/font-woff2" },
-            { test: /\.woff(\?\S*)?$/, loader: "url-loader?limit=100000&mimetype=application/font-woff" },
-            { test: /\.ttf(\?\S*)?$/, loader: "url-loader?limit=100000&mimetype=application/font-ttf" },
-            { test: /\.svg(\?\S*)?$/, loader: "url-loader?limit=100000&mimetype=image/svg+xml"},
+            { test: /\.eot$/, loader: "url-loader?limit=100000&mimetype=application/vnd.ms-fontobject" },
+            { test: /\.woff2$/, loader: "url-loader?limit=100000&mimetype=application/font-woff2" },
+            { test: /\.woff$/, loader: "url-loader?limit=100000&mimetype=application/font-woff" },
+            { test: /\.ttf$/, loader: "url-loader?limit=100000&mimetype=application/font-ttf" },
+            { test: /\.svg$/, loader: "url-loader?limit=100000&mimetype=image/svg+xml"},
             { test: /\.(png|jpg|gif)$/, loader: "url-loader", options: { limit: 10000 } }
         ]
     },

@@ -14,23 +14,20 @@ function CssLoaderReplacerPlugin(options) {
 function replaceLess(result, callback) {
 
     if(result.request.indexOf("node_modules") === -1 && 
-       result.request.indexOf("css!") > -1 &&
-       result.context.indexOf("node_modules") === -1) {
-
-        result.request = result.request.replace("css!./", "./");
-        result.request = result.request.replace(".css", ".less");
+       result.request.indexOf("css!") > -1) {
+        if ((result.context.indexOf("node_modules") === -1)) {
+            result.request = result.request.replace("css!./", "./");
+            result.request = result.request.replace(".css", ".less");
+        } else if (result.context.indexOf("node_modules\\davinci.js") > -1) {
+            result.request = result.request.replace("css!./", "./");
+        }
     }
-    if(result.request.indexOf("node_modules") === -1 && 
-       result.request.indexOf("css!") > -1 &&
-       result.context.indexOf("node_modules\\davinci.js") > -1) {
 
-        result.request = result.request.replace("css!./", "./");
-    }
     return callback();
-};
+}
 
 function cbLoadNMFPlugin(nmf) {
-    nmf.plugin("before-resolve", replaceLess)
+    nmf.plugin("before-resolve", replaceLess);
 }
 
 CssLoaderReplacerPlugin.prototype.apply = function(resolver) {
@@ -120,7 +117,7 @@ let config = {
         new PathOverridePlugin(/\/umd\//, "/esm/"),
         new CopyWebpackPlugin([
             { from: `${packagenName}.qext`, to: `${packagenName}.qext`},
-            { from: `wbfolder.wbl`, to: `wbfolder.wbl`}
+            { from: "wbfolder.wbl", to: "wbfolder.wbl"}
         ]),
         new ZipPlugin({
             path: "./",

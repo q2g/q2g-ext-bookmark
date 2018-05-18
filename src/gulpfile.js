@@ -9,7 +9,7 @@ gulp.task('removePlaceholder', function () {
 });
 
 gulp.task('less', function () {
-  return gulp.src(['./**/*.less'], { base: './src/' })
+  return gulp.src(['./*.less'], { base: './src/' })
     .pipe(less())
     .pipe(gulp.dest('./src/'));
 });

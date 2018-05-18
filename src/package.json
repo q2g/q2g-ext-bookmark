@@ -40,7 +40,7 @@
     "davinci.js": "1.4.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && gulp less",
+    "build": "tsc -p tsconfig.json && gulp less && gulp removePlaceholder",
     "build:dev": "cross-env NODE_ENV=dev webpack",
     "build:dev:watch": "cross-env NODE_ENV=dev webpack --watch --color --display-error-details"
   },

@@ -52,5 +52,6 @@ loglevel                | define the log level to be used
 1. Clone the Github Repo into extension directory
 2. Install [nodejs](https://nodejs.org/)
 3. Open Node.js command prompt
-4. npm install
-5. npm run build
+4. navigate into src folder
+5. npm install
+6. npm run build (will compile ts and less in same directory) or npm run build:dev (will create a dist folder)

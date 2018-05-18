@@ -15,6 +15,7 @@
     "@types/qlik-visualizationextensions": "4.0.2",
     "gulp": "3.9.1",
     "gulp-less": "4.0.0",
+    "gulp-clean": "0.4.0",
     "typescript": "2.7.2",
     "autoprefixer": "8.3.0",
     "clean-webpack-plugin": "0.1.19",

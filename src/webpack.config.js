@@ -11,26 +11,30 @@ const WebPackDeployAfterBuild = require("webpack-deploy-after-build");
 function CssLoaderReplacerPlugin(options) {
 }
 
+function replaceLess(result, callback) {
+
+    if(result.request.indexOf("node_modules") === -1 && 
+       result.request.indexOf("css!") > -1 &&
+       result.context.indexOf("node_modules") === -1) {
+
+        result.request = result.request.replace("css!./", "./");
+        result.request = result.request.replace(".css", ".less");
+    }
+    if(result.request.indexOf("node_modules") === -1 && 
+       result.request.indexOf("css!") > -1 &&
+       result.context.indexOf("node_modules\\davinci.js") > -1) {
+
+        result.request = result.request.replace("css!./", "./");
+    }
+    return callback();
+};
+
+function cbLoadNMFPlugin(nmf) {
+    nmf.plugin("before-resolve", replaceLess)
+}
+
 CssLoaderReplacerPlugin.prototype.apply = function(resolver) {
-    resolver.plugin("normal-module-factory", function(nmf) {
-        nmf.plugin("before-resolve", function(result, callback) {
-
-            if(result.request.indexOf("node_modules") === -1 && 
-               result.request.indexOf("css!") > -1 &&
-               result.context.indexOf("node_modules") === -1) {
-
-                result.request = result.request.replace("css!./", "./");
-                result.request = result.request.replace(".css", ".less");
-            }
-            if(result.request.indexOf("node_modules") === -1 && 
-               result.request.indexOf("css!") > -1 &&
-               result.context.indexOf("node_modules\\davinci.js") > -1) {
-
-                result.request = result.request.replace("css!./", "./");
-            }
-            return callback();
-        });
-    });
+    resolver.plugin("normal-module-factory", cbLoadNMFPlugin);
 };
 
 let config = {

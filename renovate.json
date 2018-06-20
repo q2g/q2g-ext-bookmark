@@ -9,5 +9,8 @@
         "packagePatterns": ["tslint", "prettier"],
         "groupName": "linters"
       }
+    ],
+    "baseBranches": [
+      "devlopment"
     ]
 }

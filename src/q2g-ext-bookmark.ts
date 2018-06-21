@@ -306,7 +306,7 @@ export = {
         scope.vm = new BookmarkExtension(utils.getEnigma(scope));
 
         //#region Logger
-        logging.LogConfig.SetLogLevel("*", (scope as any).layout.properties.loglevel);
+        logging.LogConfig.SetLogLevel("BookmarkController", logging.LogLevel.error);
         let logger = new logging.Logger("Main");
         //#endregion
 

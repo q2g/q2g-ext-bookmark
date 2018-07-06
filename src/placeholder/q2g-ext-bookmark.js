@@ -10,7 +10,7 @@ function ( $ ) {
         paint( $element, layout ) {
 
             $element.empty();
-            var $placeholder = $( document.createElement( "div" ) );
+            var $placeholder = $("<div>");
             $placeholder.html( `<h1>Hi, thanks for downloading this extension.</h1><br/>
                 Unfortunately the extension was not build correct. 
                 Please retry the build process, or download the Extension from 

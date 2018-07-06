@@ -22,7 +22,7 @@
     "copy-webpack-plugin": "4.5.1",
     "cross-env": "5.2.0",
     "css-loader": "0.28.11",
-    "less": "3.0.4",
+    "less": "3.5.2",
     "less-loader": "4.1.0",
     "path-override-webpack-plugin": "0.1.2",
     "postcss-loader": "2.1.5",

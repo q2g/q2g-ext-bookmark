@@ -20,6 +20,7 @@ export interface IShortcutProperties {
     sortmode: boolean;
     byLoadOrder: boolean;
     titleDimension:string;
+    loglevel: number;
 }
 
 interface IBookmarkPrivliges {
@@ -28,6 +29,11 @@ interface IBookmarkPrivliges {
     delete: boolean;
     isPublic: boolean;
 }
+
+interface ILogLevelDataNode {
+    key: string;
+    value: logging.LogLevel
+};
 //#endregion
 
 //#region enums
@@ -68,7 +74,8 @@ class BookmarkController implements ng.IController {
         byLoadOrder: true,
         sortmode: false,
         byAsciiOrder: "a",
-        titleDimension: "Bookmarks"
+        titleDimension: "Bookmarks",
+        loglevel: logging.LogLevel.warn 
     };
     public showButtons: boolean = false;
     public showFocused: boolean = false;
@@ -103,14 +110,16 @@ class BookmarkController implements ng.IController {
             try {
                 this._model = value;
                 this.registrateSelectionObject();
-                let that = this;
-                value.on("changed", function() {
+
+                const that = this;
+
+                value.on("changed",  () => {
                     that.logger.info("CHANGE from model called");
                     value.getProperties()
                     .then((res) => {
-                        return that.setProperties(res.properties);
-                    })
-                    .then(() => {
+                        that.setProperties(res.properties);
+                        // set logging level
+                        that.updateLogLevel(that.properties.loglevel);
                         that.createBookmarkListSessionObject();
                     })
                     .catch((error) => {
@@ -125,6 +134,24 @@ class BookmarkController implements ng.IController {
         }
     }
     //#endregion
+
+    /**
+     * quick fix to update a new logLevel to an existing namespace in logger
+     * 
+     * @param logLevel 
+     */
+    private updateLogLevel(logLevel: number) {
+
+        // since logLevelperClass is private we need to do this otherwise typescript compiler will crash
+        const logLevelPerClass: ILogLevelDataNode[] = (logging.LogConfig as any).logLevelperClass;
+
+        logLevelPerClass.forEach( (data: ILogLevelDataNode) => {
+            if ( data.key !== "BookmarkController" ) {
+                return;
+            }
+            data.value = logLevel;
+        });
+    }
 
     //#region theme
     private _theme: string;
@@ -500,30 +527,24 @@ class BookmarkController implements ng.IController {
      * setProperties: sets the properies from the model object
      * @param properties properties from the propertie panel from the model object
      */
-    private setProperties(properties: IShortcutProperties): Promise<void> {
+    private setProperties(properties: IShortcutProperties): void {
         this.logger.info("fcn called: setProperties", properties);
 
-        return new Promise((resolve, reject) => {
-            try {
-                this.properties.shortcutFocusBookmarkList = properties.shortcutFocusBookmarkList;
-                this.properties.shortcutFocusSearchField = properties.shortcutFocusSearchField;
-                this.properties.shortcutRemoveBookmark = properties.shortcutRemoveBookmark;
-                this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
-                this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
-                this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
-                this.properties.bookmarkType = properties.bookmarkType?properties.bookmarkType:"bookmark";
-                this.properties.useSheet = properties.useSheet;
-                this.properties.showFocusedElement = properties.showFocusedElement;
-                this.properties.sortmode = properties.sortmode;
-                this.properties.byAscii = properties.byAscii;
-                this.properties.byLoadOrder = properties.byLoadOrder;
-                this.properties.byAsciiOrder = properties.byAsciiOrder;
-                this.properties.titleDimension = properties.titleDimension;
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
+        this.properties.shortcutFocusBookmarkList = properties.shortcutFocusBookmarkList;
+        this.properties.shortcutFocusSearchField = properties.shortcutFocusSearchField;
+        this.properties.shortcutRemoveBookmark = properties.shortcutRemoveBookmark;
+        this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+        this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+        this.properties.shortcutAddBookmark = properties.shortcutAddBookmark;
+        this.properties.bookmarkType = properties.bookmarkType?properties.bookmarkType:"bookmark";
+        this.properties.useSheet = properties.useSheet;
+        this.properties.showFocusedElement = properties.showFocusedElement;
+        this.properties.sortmode = properties.sortmode;
+        this.properties.byAscii = properties.byAscii;
+        this.properties.byLoadOrder = properties.byLoadOrder;
+        this.properties.byAsciiOrder = properties.byAsciiOrder;
+        this.properties.titleDimension = properties.titleDimension;
+        this.properties.loglevel = properties.loglevel;
     }
 
     /**

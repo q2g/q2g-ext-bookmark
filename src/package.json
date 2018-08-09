@@ -13,15 +13,14 @@
     "@types/jquery": "3.3.3",
     "@types/qlik-engineapi": "12.67.1",
     "@types/qlik-visualizationextensions": "4.0.2",
-    "q2g-build": "file:../../q2g-build",
+    "q2g-build": "^1.0.3",
     "typescript": "2.9.2"
   },
   "dependencies": {
     "davinci.js": "file:../../daVinci.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && gulp less && gulp removePlaceholder",
-    "build:q2g": "node node_modules/q2g-build --builder extension --config q2g.extension.json"
+    "build": "node node_modules/q2g-build --builder extension --config q2g.extension.json"
   },
   "renovate-config": {}
 }

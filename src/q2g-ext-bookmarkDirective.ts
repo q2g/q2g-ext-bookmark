@@ -212,6 +212,8 @@ class BookmarkController implements ng.IController {
         try {
             this.showFocused = this.properties.showFocusedElement?true:false;
             this._focusedPosition = v;
+
+            // debugger;
             if (v < 0) {
                 this.menuList[0].isEnabled = true;
                 this.showSearchField = false;
@@ -221,6 +223,7 @@ class BookmarkController implements ng.IController {
 
                 if(!this.appIsPublic) {
                     this.menuList[2].isEnabled = false;
+                    this.menuList[0].isEnabled = false;
                     this.menuList = JSON.parse(JSON.stringify(this.menuList));
                     return;
                 }

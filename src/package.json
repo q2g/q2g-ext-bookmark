@@ -9,15 +9,15 @@
   },
   "author": "Thomas Häning, Konrad Mattheis (qlik2go)",
   "devDependencies": {
-    "@types/angular": "1.6.47",
-    "@types/jquery": "3.3.4",
-    "@types/qlik-engineapi": "12.67.1",
-    "@types/qlik-visualizationextensions": "4.0.2",
-    "q2g-build": "^1.1.5",
-    "typescript": "2.9.2"
+    "@types/angular": "1.6.54",
+    "@types/jquery": "3.3.29",
+    "@types/qlik-engineapi": "12.67.8",
+    "@types/qlik-visualizationextensions": "4.0.4",
+    "q2g-build": "1.4.0",
+    "typescript": "3.5.1"
   },
   "dependencies": {
-    "davinci.js": "^1.4.5"
+    "davinci.js": "1.4.5"
   },
   "keywords": [
     "qlik-sense",
@@ -33,7 +33,8 @@
     "type": "visualization"
   },
   "scripts": {
-    "build": "node node_modules/q2g-build --builder extension --config q2g.extension.json"
+    "q2g-build:dev": "node node_modules/q2g-build --builder extension --config q2g-build.webpack.json",
+    "q2g-build:prod": "node node_modules/q2g-build --builder extension --env production --config q2g-build.webpack.json"
   },
   "renovate-config": {}
 }

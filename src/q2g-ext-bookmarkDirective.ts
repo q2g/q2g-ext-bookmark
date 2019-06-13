@@ -212,6 +212,8 @@ class BookmarkController implements ng.IController {
         try {
             this.showFocused = this.properties.showFocusedElement?true:false;
             this._focusedPosition = v;
+
+            // debugger;
             if (v < 0) {
                 this.menuList[0].isEnabled = true;
                 this.showSearchField = false;
@@ -221,6 +223,7 @@ class BookmarkController implements ng.IController {
 
                 if(!this.appIsPublic) {
                     this.menuList[2].isEnabled = false;
+                    this.menuList[0].isEnabled = false;
                     this.menuList = JSON.parse(JSON.stringify(this.menuList));
                     return;
                 }
@@ -265,6 +268,23 @@ class BookmarkController implements ng.IController {
 
     $onInit(): void {
         this.logger.debug("initialisation from BookmarkController");
+        
+        this.checkIfAppIsPublicOrDesktop()
+        .then((result) => {
+            this.appIsPublic = result;
+        })
+        .catch((error) => {
+            this.logger.error("Error in checkIfAppIsPublicOrDesktop", error);
+        });
+
+        this.getSheetId()
+        .then((sheetId) => {
+            this.sheetId = sheetId;
+        })
+        .catch((error) => {
+            this.sheetId = null;
+            this.logger.error("ERROR in getSheetId", error);
+        });
     }
 
     static $inject = ["$timeout", "$element", "$scope"];
@@ -281,23 +301,6 @@ class BookmarkController implements ng.IController {
 
         this.initMenuElements();
         this.initInputStates();
-
-        this.checkIfAppIsPublicOrDesktop()
-        .then((result) => {
-            this.appIsPublic = result;
-        })
-        .catch((error) => {
-            this.logger.error("Error in checkIfAppIsPublicOrDesktop", error);
-        });
-
-        this.getSheetId()
-        .then((sheetId) => {
-            this.sheetId = sheetId;
-        })
-        .catch((error) => {
-            this.sheetId = null;
-            this.logger.error("ERROR in ", error);
-        });
 
         $(document).on("click", (e: JQueryEventObject) => {
             try {
@@ -390,6 +393,7 @@ class BookmarkController implements ng.IController {
      * @param shortcutObject object wich gives you the shortcut name and the element, from which the shortcut come from
      */
     shortcutHandler(shortcutObject: directives.IShortcutObject, domcontainer: utils.IDomContainer): boolean {
+        
         switch (shortcutObject.name) {
 
             //#region focusList

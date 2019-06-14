@@ -1,4 +1,5 @@
 # Bookmark Extension
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b571357db4464b669486f547da8dd3de)](https://www.codacy.com/app/thomashaenig/q2g-ext-bookmark?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=q2g/q2g-ext-bookmark&amp;utm_campaign=Badge_Grade)
 [![TravisCI](https://travis-ci.com/q2g/q2g-ext-bookmark.svg?branch=master)](https://travis-ci.org/q2g/q2g-ext-bookmark)
 <a href="https://m.sense2go.net/extension-package"><img src="https://m.sense2go.net/downloads.svg" alt="drawing" width="130"/></a>

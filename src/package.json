@@ -13,11 +13,10 @@
     "@types/jquery": "3.3.29",
     "@types/qlik-engineapi": "12.67.8",
     "@types/qlik-visualizationextensions": "4.0.4",
-    "q2g-build": "1.4.0",
-    "typescript": "3.5.2"
+    "q2g-build": "^2.0.6"
   },
   "dependencies": {
-    "davinci.js": "1.4.5"
+    "davinci.js": "^1.5.0"
   },
   "keywords": [
     "qlik-sense",

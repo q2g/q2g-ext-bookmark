@@ -721,7 +721,7 @@ class BookmarkController implements ng.IController {
                         that.selectBookmarkToggle = false;
                     })
                     .catch((error) => {
-                        this.logger.error("ERROR in on change of selection objcet", error);
+                        that.logger.error("ERROR in on change of selection objcet", error);
                     });
                 });
                 object.emit("changed");
